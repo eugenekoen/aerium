@@ -1,0 +1,154 @@
+<div class="body-container">
+    <div class="client-view-top-section">
+        <div class="tab-content active" id="tab1">
+            <div class="client-info-top-section">
+                <!-- Placeholder for dynamic title -->
+                <h2>Client Information - [Client Name/ID Here]</h2>
+
+                <form id="client-form">
+                    <div class="row">
+                        <div class="column">
+                            <div class="form-group">
+                                <label class="label-class" for="clientName">Client Name:</label>
+                                <!-- Replaced InputText with input -->
+                                <input type="text" id="clientName" class="input-client-view"
+                                    value="Sample Client Name" />
+                                <!-- Placeholder for validation message -->
+                                <!-- <span class="validation-message" data-valmsg-for="clientName"></span> -->
+                            </div>
+                            <div class="form-group">
+                                <label class="label-class" for="contactName">Contact Name:</label>
+                                <input type="text" id="contactName" class="input-client-view" value="John Doe" />
+                            </div>
+                            <div class="form-group">
+                                <label class="label-class" for="emailAddress">Email Address:</label>
+                                <input type="email" id="emailAddress" class="input-client-view"
+                                    value="john.doe@example.com" />
+                            </div>
+                            <div class="form-group">
+                                <label class="label-class-textarea" for="address">Address:</label>
+                                <!-- Replaced InputTextArea with textarea -->
+                                <textarea id="address" class="form-control" rows="5">123 Main St, Anytown</textarea>
+                            </div>
+                            <div class="form-group column-short">
+                                <label class="label-class" for="billingCode">Billing Code:</label>
+                                <input maxlength="8" type="text" class="input-client-view" id="billingCode"
+                                    value="ABC-123" />
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="form-group">
+                                <label class="label-class" for="clientType">Client Type:</label>
+                                <!-- Replaced InputSelect with select -->
+                                <select id="clientType" class="form-control select-class">
+                                    <option value="">-- Select Type --</option>
+                                    <!-- Static examples from @foreach loop -->
+                                    <option value="1">Type A</option>
+                                    <option value="2" selected>Type B</option> <!-- Example of selected -->
+                                    <option value="3">Type C</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="label-class" for="ckidNumber">CK / ID Number:</label>
+                                <input type="text" id="ckidNumber" class="input-client-view" value="CK123456789" />
+                            </div>
+                            <div class="form-group">
+                                <label class="label-class" for="vatNumber">VAT Number:</label>
+                                <input type="text" id="vatNumber" class="input-client-view" value="4001234567" />
+                            </div>
+                            <div class="form-group">
+                                <label class="label-class" for="payeNumber">PAYE Number:</label>
+                                <input type="text" id="payeNumber" class="input-client-view" value="7001234567" />
+                            </div>
+                            <div class="form-group">
+                                <label class="label-class" for="uifNumber">UIF Number:</label>
+                                <input type="text" id="uifNumber" class="input-client-view" value="U123456789" />
+                            </div>
+                            <div class="form-group">
+                                <label class="label-class" for="sdlNumber">SDL Number:</label>
+                                <input type="text" id="sdlNumber" class="input-client-view" value="L123456789" />
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="form-group">
+                                <label class="label-class" for="taxNumber">Tax Number:</label>
+                                <input type="text" id="taxNumber" class="input-client-view" value="9001234567" />
+                            </div>
+                            <div class="form-group">
+                                <label class="label-class" for="wcaNumber">WCA Number:</label>
+                                <input type="text" id="wcaNumber" class="input-client-view" value="WCA12345" />
+                            </div>
+                            <div class="form-group">
+                                <label class="label-class" for="telNumber">Tel Number:</label>
+                                <input type="text" id="telNumber" class="input-client-view" value="011-555-1234" />
+                            </div>
+                            <div class="form-group">
+                                <label class="label-class" for="cellNumber">Cell Number:</label>
+                                <input type="text" id="cellNumber" class="input-client-view" value="082-555-5678" />
+                            </div>
+                            <div class="form-group column-input">
+                                <label class="label-class" for="yearEnd">Year End:</label>
+                                <select id="yearEnd" class="form-control select-class">
+                                    <option value="">-- Select --</option>
+                                    <!-- Static examples -->
+                                    <option value="1">February</option>
+                                    <option value="2">June</option>
+                                    <option value="3" selected>December</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="label-class" for="clientStatusId">Client Status:</label>
+                                <select id="clientStatusId" class="form-control select-class">
+                                    <option value="">-- Select --</option>
+                                    <!-- Static examples -->
+                                    <option value="1" selected>Active</option>
+                                    <option value="2">Inactive</option>
+                                    <option value="3">Prospect</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Buttons - removed @onclick, added basic onclick stubs for illustration -->
+                    <button class="button" type="submit">Submit</button>
+                    <button class="button" type="button" onclick="alert('Cancel clicked - JS needed')">Cancel</button>
+                </form>
+            </div>
+
+            <div class="client-info-bottom-section">
+                <h2>SERVICES OFFERED</h2>
+                <table>
+                    <!-- Static representation of the service checkbox table loop -->
+                    <tr>
+                        <td>
+                            <input class="service-checkbox" type="checkbox" id="service-0" checked />
+                            <label for="service-0">Service 1</label>
+                        </td>
+                        <td>
+                            <input class="service-checkbox" type="checkbox" id="service-1" />
+                            <label for="service-1">Service 2</label>
+                        </td>
+                        <td>
+                            <input class="service-checkbox" type="checkbox" id="service-2" checked />
+                            <label for="service-2">Service 3</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input class="service-checkbox" type="checkbox" id="service-3" />
+                            <label for="service-3">Service 4</label>
+                        </td>
+                        <td>
+                            <input class="service-checkbox" type="checkbox" id="service-5" checked />
+                            <label for="service-5">Service 5</label>
+                        </td>
+                        <td>
+                            <!-- Example of empty cell if not a full row -->
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>

@@ -78,7 +78,7 @@ async function loadClients()
     try
     {
         // Fetch data from 'Clients' and related tables
-        let { data: Clients, error } = await supabase
+        let { data: clients, error } = await supabase
             .from('Clients')
             .select(`
                 Id,
@@ -89,22 +89,14 @@ async function loadClients()
                 CellNumber,
                 BillingCode,
                 ClientTypes ( Name ),
-                ClientStatuses ( Name ),
-                YearEnds ( Name )
+                ClientStatuses:ClientStatusId ( Name ),
+                YearEnds:YearEndId ( Name )
             `)
             .order('ClientName', { ascending: true });
-
-        // IMPORTANT: Now that the request is made by an authenticated user,
-        // Supabase will apply the RLS policy: "Allow full access for authenticated users".
-        // If this policy exists and is correct, the request should succeed.
 
         if (error)
         {
             console.error('Error fetching clients:', error);
-            // Check the error message. If it mentions RLS violation or permission denied,
-            // double-check your policies for 'Clients' AND the related tables
-            // ('ClientTypes', 'ClientStatuses', 'YearEnds'). Authenticated users
-            // need SELECT permission on ALL these tables for the query to work.
             tableBody.innerHTML = `<tr><td colspan="10" style="color: red; text-align: center;">Error loading clients: ${error.message}</td></tr>`;
             return;
         }

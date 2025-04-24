@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="app.css">
+    <title>Aerium - All Clients</title>
+    <!-- Include the Supabase JS library via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+    <!-- NAVIGATION BAR ON THE LEFT -->
+    <div class="sidenav">
+        <!-- Link to index.html for static hosting -->
+        <a class="sidenav-profile" href="index.html">Home</a>
+        <!-- Make this link active or styled differently if desired -->
+        <a href="AllClients.html">Clients</a>
+
+        <div class="sidenav-bottom">
+            <a href="#" onclick="handleLogout(); return false;">Logout</a>
+        </div>
+    </div>
+    <!-- NAVIGATION BAR ON THE LEFT -->
+
+    <div class="body">
+        <div class="top-buttons-list-view">
+            <button><a href="#">Add Client</a></button>
+        </div>
+        <table class="client-list-view-table">
+            <thead>
+                <tr>
+                    <th>Client Name</th>
+                    <th>Contact Name</th>
+                    <th>Client Type</th>
+                    <th>Email Address</th>
+                    <th>Tel Number</th>
+                    <th>Cell Number</th>
+                    <th>Year End</th>
+                    <th>Client Status</th>
+                    <th>Billing Code</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <!-- Add an ID to the tbody for easy selection in JS -->
+            <!-- Remove the static row, JS will populate this -->
+            <tbody id="client-table-body">
+                <!-- Data will be loaded here by JavaScript -->
+                <tr>
+                    <td colspan="10" style="text-align: center;">Loading clients...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Link your custom JavaScript file for this page -->
+    <!-- Place scripts at the end of body for better performance -->
+    <script src="allclients.js"></script>
+
+</body>
+
+</html>

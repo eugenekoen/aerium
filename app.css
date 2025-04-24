@@ -1,0 +1,75 @@
+/* NAVBAR  */
+
+.sidenav {
+    height: 100%;
+    width: 200px;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: #111;
+    overflow-x: hidden;
+}
+
+.sidenav-bottom {
+    width: inherit;
+    position: absolute;
+    bottom: 10px;
+}
+
+.sidenav-profile {
+    height: 100px;
+    align-content: center;
+}
+
+.sidenav a {
+    padding: 6px 6px 6px 32px;
+    text-decoration: none;
+    font-size: 22px;
+    color: #818181;
+    display: block;
+    font-family: "Roboto", sans-serif;
+    font-weight: 400;
+}
+
+.sidenav a:hover {
+    color: #f1f1f1;
+    background-color: darkslategray;
+}
+
+/* NAVBAR */
+
+/* BODY CLASS - MARGIN LEFT TO SHOW CONTENT */
+
+.body {
+    margin-left: 200px;
+}
+
+/* BODY CLASS - MARGIN LEFT TO SHOW CONTENT */
+
+/* CLIENT LIST VIEW */
+
+.client-list-view-table {
+    margin: 20px;
+    border-collapse: collapse;
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.client-list-view-table th {
+    border: 1px solid black;
+    padding: 7px;
+    font-size: 17px;
+}
+
+.client-list-view-table td {
+    border: 1px solid black;
+    padding: 7px;
+}
+
+.top-buttons-list-view {
+    margin: 20px;
+}
+
+/* CLIENT LIST VIEW */

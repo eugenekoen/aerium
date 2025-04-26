@@ -17,6 +17,7 @@
         <a class="sidenav-profile" href="index.html">Home</a>
         <!-- Make this link active or styled differently if desired -->
         <a href="AllClients.html">Clients</a>
+        <a href="ClientView.html">Client View</a>
 
         <div class="sidenav-bottom">
             <a href="#" onclick="handleLogout(); return false;">Logout</a>
@@ -25,8 +26,20 @@
     <!-- NAVIGATION BAR ON THE LEFT -->
 
     <div class="body">
+
+        <div class="pagination-controls">
+            <button id="prev-page" disabled>Previous</button>
+            <span id="page-info">Page 1</span>
+            <button id="next-page">Next</button>
+            <select id="page-size">
+                <option value="10">10 per page</option>
+                <option value="25">25 per page</option>
+                <option value="50">50 per page</option>
+            </select>
+        </div>
+
         <div class="top-buttons-list-view">
-            <button><a href="#">Add Client</a></button>
+            <button class="button"><a href="#">Add Client</a></button>
         </div>
         <table class="client-list-view-table">
             <thead>

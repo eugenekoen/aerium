@@ -4,6 +4,11 @@
 const SUPABASE_URL = 'https://rezjbpyicdasqlhldwok.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlempicHlpY2Rhc3FsaGxkd29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA2NTUwNzUsImV4cCI6MjA1NjIzMTA3NX0.o9ZN3Q7-2ijrDrry5XP3SEqOS8PKqoHF-W-LGYmtswg';
 
+// --- Pagination State ---
+let currentPage = 1;
+let pageSize = 10;
+let totalClients = 0;
+
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY)
 {
     alert("Supabase configuration is missing. Please check allclients.js");
@@ -23,16 +28,13 @@ try
     throw error;
 }
 
-// --- 2. Get Reference to the Table Body ---
+// --- 2. Get Reference to the Table Body and Pagination Elements ---
 const tableBody = document.getElementById('client-table-body');
-if (!tableBody)
-{
-    console.error("Could not find element with ID 'client-table-body'");
-    throw new Error("Table body element not found.");
-}
+// References to pagination controls
+let prevPageBtn, nextPageBtn, pageInfo, pageSizeSelect;
 
 // --- Inactivity Logout Variables & Functions ---
-const INACTIVITY_TIMEOUT_MS = 1 * 60 * 1000; // 10 minutes in milliseconds
+const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes in milliseconds
 let inactivityTimerId;
 
 // Simple debounce function
@@ -100,7 +102,6 @@ function stopInactivityDetection()
     console.log("Inactivity detection stopped.");
 }
 
-
 // --- Authentication Check ---
 async function checkAuthenticationAndLoadData()
 {
@@ -125,18 +126,84 @@ async function checkAuthenticationAndLoadData()
     } else
     {
         console.log("User is authenticated. Loading client data and starting inactivity timer...");
-        loadClients(); // Load data
+        // Initialize pagination controls after confirming authentication
+        initializePaginationControls();
+        loadClients(); // Load data with pagination
         setupInactivityDetection(); // *** ADDED: Start inactivity detection ***
     }
 }
 
+// --- Initialize Pagination Controls ---
+function initializePaginationControls()
+{
+    prevPageBtn = document.getElementById('prev-page');
+    nextPageBtn = document.getElementById('next-page');
+    pageInfo = document.getElementById('page-info');
+    pageSizeSelect = document.getElementById('page-size');
 
-// --- Function to Fetch and Display Clients ---
+    // Previous page button
+    prevPageBtn.addEventListener('click', () =>
+    {
+        if (currentPage > 1)
+        {
+            currentPage--;
+            loadClients();
+        }
+    });
+
+    // Next page button
+    nextPageBtn.addEventListener('click', () =>
+    {
+        currentPage++;
+        loadClients();
+    });
+
+    // Page size select
+    pageSizeSelect.addEventListener('change', () =>
+    {
+        pageSize = parseInt(pageSizeSelect.value);
+        currentPage = 1; // Reset to first page when changing page size
+        loadClients();
+    });
+}
+
+// --- Function to Get Total Count of Clients ---
+async function getClientCount()
+{
+    try
+    {
+        const { count, error } = await supabase
+            .from('Clients')
+            .select('*', { count: 'exact', head: true });
+
+        if (error)
+        {
+            console.error('Error fetching client count:', error);
+            return 0;
+        }
+
+        return count;
+    } catch (err)
+    {
+        console.error('Unexpected error getting client count:', err);
+        return 0;
+    }
+}
+
+// --- Function to Fetch and Display Clients with Pagination ---
 async function loadClients()
 {
     tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">Loading clients...</td></tr>';
+
     try
     {
+        // Get the total count for pagination calculation
+        totalClients = await getClientCount();
+
+        // Calculate offset based on current page and page size
+        const offset = (currentPage - 1) * pageSize;
+
+        // Fetch the clients with pagination parameters
         let { data: clients, error } = await supabase
             .from('Clients')
             .select(`
@@ -145,7 +212,8 @@ async function loadClients()
                 ClientStatuses:ClientStatusId ( Name ),
                 YearEnds:YearEndId ( Name )
             `)
-            .order('ClientName', { ascending: true });
+            .order('ClientName', { ascending: true })
+            .range(offset, offset + pageSize - 1);
 
         if (error)
         {
@@ -176,8 +244,8 @@ async function loadClients()
                     <td>${clientStatusName}</td>
                     <td>${client.BillingCode ?? ''}</td>
                     <td>
-                        <button onclick="editClient(${client.Id})">Edit</button>
-                        <button onclick="deleteClient(${client.Id}, '${client.ClientName}')">Delete</button>
+                        <button class="button" onclick="editClient(${client.Id})">Edit</button>
+                        <button class="button" onclick="deleteClient(${client.Id}, '${client.ClientName}')">Delete</button>
                     </td>
                 `;
                 tableBody.appendChild(row);
@@ -187,11 +255,30 @@ async function loadClients()
             tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">No clients found.</td></tr>';
         }
 
+        // Update pagination controls
+        updatePaginationControls();
+
     } catch (err)
     {
         console.error('An unexpected error occurred:', err);
         tableBody.innerHTML = '<tr><td colspan="10" style="color: red; text-align: center;">An unexpected error occurred. Check console.</td></tr>';
     }
+}
+
+// --- Update Pagination Controls Based on Current State ---
+function updatePaginationControls()
+{
+    // Calculate total pages
+    const totalPages = Math.ceil(totalClients / pageSize);
+
+    // Update page info text
+    pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+
+    // Enable/disable previous button
+    prevPageBtn.disabled = currentPage <= 1;
+
+    // Enable/disable next button
+    nextPageBtn.disabled = currentPage >= totalPages;
 }
 
 // --- Placeholder functions for Edit/Delete ---

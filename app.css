@@ -1,3 +1,33 @@
+/* GLOBAL*/
+
+.button {
+    padding: 8px 15px;
+    background-color: #1c90c9;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.button:hover:not([disabled]) {
+    background-color: #527a7a;
+}
+
+.button[disabled] {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+a {
+    text-decoration: none;
+    color: white;
+}
+
+
+/* GLOBAL */
+
+
+
 /* NAVBAR  */
 
 .sidenav {
@@ -40,6 +70,11 @@
 /* NAVBAR */
 
 /* BODY CLASS - MARGIN LEFT TO SHOW CONTENT */
+
+body {
+    margin: 0;
+}
+
 
 .body {
     margin-left: 200px;
@@ -141,3 +176,196 @@
 }
 
 /* LOGIN PAGE */
+
+/* PAGINATION */
+
+/* PAGINATION CONTROLS */
+.pagination-controls {
+    margin: 20px;
+    font-family: "Roboto", sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pagination-controls button {
+    padding: 8px 15px;
+    background-color: #1c90c9;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.pagination-controls button:hover:not([disabled]) {
+    background-color: #527a7a;
+}
+
+.pagination-controls button[disabled] {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.pagination-controls select {
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+#page-info {
+    font-weight: bold;
+    min-width: 100px;
+    text-align: center;
+}
+
+/* PAGINATION CONTROLS */
+
+/* CLIENT VIEW */
+.body-container {
+    margin-left: 200px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    ;
+    /* Make the container take up the full viewport height */
+}
+
+.client-view-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    background-color: lightblue;
+}
+
+.tab-content.active {
+    display: block;
+    /* Show active tab content */
+}
+
+.client-view-top-section {
+    height: 40vh;
+}
+
+.client-view-top-section h2 {
+    margin-left: 15px;
+    font-family: "Roboto", sans-serif;
+    font-size: 20px;
+}
+
+.label-class {
+    width: 120px;
+    display: inline-block;
+    padding: 10px;
+    font-family: "Roboto", sans-serif;
+    font-size: 15px;
+}
+
+.row {
+    display: flex;
+    /* Arrange elements horizontally */
+}
+
+.column {
+    margin: 0.5rem;
+    /* Add some margin between columns */
+}
+
+.column input {
+    width: 200px;
+    font-family: "Roboto", sans-serif;
+    font-size: 15px;
+}
+
+.column select {
+    width: 208px;
+    font-size: 15px;
+    font-family: "Roboto", sans-serif;
+}
+
+.label-class-textarea {
+    width: 120px;
+    display: inline-block;
+    vertical-align: top;
+    padding: 10px;
+    font-size: 15px;
+    font-family: "Roboto", sans-serif;
+}
+
+textarea {
+    width: 202px;
+    margin-top: 10px;
+    height: 90px;
+    font-size: 15px;
+    font-family: "Roboto", sans-serif;
+}
+
+.column-short input {
+    width: 100px;
+    font-family: "Roboto", sans-serif;
+    font-size: 15px;
+}
+
+.label-class-short {
+    width: 90px;
+    display: inline-block;
+    padding: 10px;
+    font-family: "Roboto", sans-serif;
+    font-size: 15px;
+}
+
+.column-input input {
+    width: 70px;
+    font-family: "Roboto", sans-serif;
+    font-size: 15px;
+}
+
+
+.column-input select {
+    width: 100px;
+    font-size: 15px;
+    font-family: "Roboto", sans-serif;
+}
+
+#client-form button {
+    margin-left: 15px;
+}
+
+.client-view-bottom-section {
+    border-top: 1px solid black;
+    background-color: none;
+    height: auto;
+}
+
+.client-view-bottom-section h2 {
+    margin-left: 15px;
+    font-family: "Roboto", sans-serif;
+    font-size: 20px;
+}
+
+.client-view-bottom-section table {
+    width: 70%;
+    /* Make the table span the full width */
+    margin-left: 10px;
+}
+
+.client-view-bottom-section table td {
+    padding: 0.5rem;
+    /* Add some padding to each cell */
+    text-align: left;
+    /* Align text to the left */
+    width: 100px;
+}
+
+
+
+.client-view-bottom-section table td label {
+    font-family: "Roboto", sans-serif;
+    font-size: 15px;
+}
+
+.service-checkbox {
+    transform: scale(1.1);
+    vertical-align: auto;
+}
+
+
+/* CLIENT VIEW */

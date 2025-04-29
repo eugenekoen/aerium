@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="app.css">
+    <link rel="shortcut icon" href="assets/app_icon.png" />
     <title>Aerium - All Clients</title>
     <!-- Include the Supabase JS library via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -17,7 +18,6 @@
         <a class="sidenav-profile" href="index.html">Home</a>
         <!-- Make this link active or styled differently if desired -->
         <a href="AllClients.html">Clients</a>
-        <a href="ClientView.html">Client View</a>
 
         <div class="sidenav-bottom">
             <a href="#" onclick="handleLogout(); return false;">Logout</a>
@@ -39,7 +39,7 @@
         </div>
 
         <div class="top-buttons-list-view">
-            <button class="button"><a href="#">Add Client</a></button>
+            <button class="button" onclick="navigateToAddClient()">Add Client</button>
         </div>
         <table class="client-list-view-table">
             <thead>

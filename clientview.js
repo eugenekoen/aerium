@@ -1,5 +1,3 @@
-// --- START OF FILE clientview.js ---
-
 // --- 1. Initialize Supabase Client ---
 const SUPABASE_URL = 'https://rezjbpyicdasqlhldwok.supabase.co'; // Same as other files
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlempicHlpY2Rhc3FsaGxkd29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA2NTUwNzUsImV4cCI6MjA1NjIzMTA3NX0.o9ZN3Q7-2ijrDrry5XP3SEqOS8PKqoHF-W-LGYmtswg'; // Same as other files
@@ -24,29 +22,31 @@ try
 }
 
 // --- 2. Get DOM Elements ---
-// Form fields
 const clientNameInput = document.getElementById('clientName');
 const contactNameInput = document.getElementById('contactName');
 const emailAddressInput = document.getElementById('emailAddress');
 const addressTextarea = document.getElementById('address');
 const billingCodeInput = document.getElementById('billingCode');
 const clientTypeSelect = document.getElementById('clientType');
-const ckidNumberInput = document.getElementById('ckidNumber'); // HTML ID can stay camelCase
-const vatNumberInput = document.getElementById('vatNumber');   // HTML ID can stay camelCase
-const payeNumberInput = document.getElementById('payeNumber');  // HTML ID can stay camelCase
-const uifNumberInput = document.getElementById('uifNumber');   // HTML ID can stay camelCase
-const sdlNumberInput = document.getElementById('sdlNumber');   // HTML ID can stay camelCase
+const ckidNumberInput = document.getElementById('ckidNumber');
+const vatNumberInput = document.getElementById('vatNumber');
+const payeNumberInput = document.getElementById('payeNumber');
+const uifNumberInput = document.getElementById('uifNumber');
+const sdlNumberInput = document.getElementById('sdlNumber');
 const taxNumberInput = document.getElementById('taxNumber');
-const wcaNumberInput = document.getElementById('wcaNumber');   // HTML ID can stay camelCase
+const wcaNumberInput = document.getElementById('wcaNumber');
 const telNumberInput = document.getElementById('telNumber');
 const cellNumberInput = document.getElementById('cellNumber');
 const yearEndSelect = document.getElementById('yearEnd');
 const clientStatusSelect = document.getElementById('clientStatusId');
 const clientForm = document.getElementById('client-form');
 const pageTitle = document.querySelector('.client-view-top-section h2');
+// *** REMOVED servicesContainer reference ***
+const notesTableBody = document.getElementById('notes-table-body'); // *** ADDED reference for notes table body ***
+const submitButton = clientForm.querySelector('button[type="submit"]');
 
-// Services Checkboxes (will be handled based on the 'Services' varchar column for now)
-const servicesContainer = document.querySelector('.client-view-bottom-section table'); // Container for checkboxes
+// --- Global variable to store current mode ('add' or 'edit') ---
+let currentMode = 'edit'; // Default to edit
 
 // --- Inactivity Logout Variables & Functions ---
 const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
@@ -125,24 +125,31 @@ async function handleLogout()
 window.handleLogout = handleLogout;
 
 
-// --- 3. Get Client ID from URL ---
+// --- 3. Get Client ID and Mode from URL ---
 function getClientIdFromUrl()
 {
     const urlParams = new URLSearchParams(window.location.search);
     const clientId = urlParams.get('clientId');
-    // *** This log is crucial ***
     console.log("[getClientIdFromUrl] Raw value from URL 'clientId' parameter:", clientId);
     return clientId;
 }
 
-// --- 4. Fetch Client Data from Supabase ---
+function getModeFromUrl()
+{
+    const urlParams = new URLSearchParams(window.location.search);
+    const mode = urlParams.get('mode');
+    console.log("[getModeFromUrl] Raw value from URL 'mode' parameter:", mode);
+    return mode === 'add' ? 'add' : 'edit';
+}
+
+// --- 4. Fetch Client Data from Supabase (Only for Edit Mode) ---
 async function fetchClientData(clientId)
 {
     if (!clientId)
     {
-        console.error("No Client ID provided in URL.");
-        pageTitle.textContent = "Error: No Client ID Specified";
-        alert("Cannot load client data: No Client ID found in the URL.");
+        console.error("No Client ID provided in URL for fetching.");
+        pageTitle.textContent = "Error: No Client ID Specified for Edit";
+        alert("Cannot load client data: No Client ID found in the URL for editing.");
         clientForm.style.display = 'none';
         return null;
     }
@@ -152,18 +159,16 @@ async function fetchClientData(clientId)
 
     try
     {
-        // *** DEFINITIVELY Corrected Select statement: NO comments inside the string ***
+        // *** REMOVED 'Services' from the select string ***
         const selectColumns = `
             Id, ClientName, ContactName, EmailAddress, Address, BillingCode,
             ClientTypeId, CkIdNumber, VatNumber, PayeNumber, UifNumber, SdlNumber,
-            TaxNumber, WcaNumber, TelNumber, CellNumber, YearEndId, ClientStatusId,
-            Services
+            TaxNumber, WcaNumber, TelNumber, CellNumber, YearEndId, ClientStatusId
         `;
-        // Comments belong OUTSIDE the string like this one
 
         const { data: client, error } = await supabase
             .from('Clients')
-            .select(selectColumns) // Pass the clean string here
+            .select(selectColumns)
             .eq('Id', clientId)
             .single();
 
@@ -171,13 +176,12 @@ async function fetchClientData(clientId)
         {
             console.error('Error fetching client data:', error);
             if (error.code === 'PGRST116')
-            { // Code for " volto result contains 0 rows"
+            {
                 pageTitle.textContent = `Error: Client with ID ${clientId} not found.`;
                 alert(`Error: Client with ID ${clientId} not found.`);
             } else
             {
                 pageTitle.textContent = `Error loading client ${clientId}`;
-                // Provide more specific error from Supabase
                 alert(`Error fetching client data: ${error.message} (Code: ${error.code}) Hint: ${error.hint || 'N/A'}`);
             }
             clientForm.style.display = 'none';
@@ -185,7 +189,7 @@ async function fetchClientData(clientId)
         }
 
         if (!client)
-        { // Should be caught by PGRST116, but good safety check
+        {
             pageTitle.textContent = `Error: Client with ID ${clientId} not found.`;
             alert(`Client with ID ${clientId} could not be found.`);
             clientForm.style.display = 'none';
@@ -193,7 +197,7 @@ async function fetchClientData(clientId)
         }
 
         console.log("Client data fetched:", client);
-        // Return the fetched client data (including the Services string)
+        // Return the fetched client data (without Services)
         return { client };
 
     } catch (err)
@@ -207,180 +211,162 @@ async function fetchClientData(clientId)
 }
 
 
-// --- 5. Populate Form Fields ---
+// --- 5. Populate Form Fields (Only for Edit Mode, or clear for Add Mode) ---
 function populateForm(clientData)
 {
-    if (!clientData || !clientData.client)
+    if (clientData && clientData.client)
     {
-        console.error("Cannot populate form, client data is missing.");
-        return;
+        const { client } = clientData;
+        console.log("Populating form with data:", client);
+        pageTitle.textContent = `Client Information - ${client.ClientName || 'Unnamed Client'} (ID: ${client.Id})`;
+
+        // --- Populate main form fields (as before) ---
+        clientNameInput.value = client.ClientName || '';
+        contactNameInput.value = client.ContactName || '';
+        emailAddressInput.value = client.EmailAddress || '';
+        addressTextarea.value = client.Address || '';
+        billingCodeInput.value = client.BillingCode || '';
+        ckidNumberInput.value = client.CkIdNumber || '';
+        vatNumberInput.value = client.VatNumber || '';
+        payeNumberInput.value = client.PayeNumber || '';
+        uifNumberInput.value = client.UifNumber || '';
+        sdlNumberInput.value = client.SdlNumber || '';
+        taxNumberInput.value = client.TaxNumber || '';
+        wcaNumberInput.value = client.WcaNumber || '';
+        telNumberInput.value = client.TelNumber || '';
+        cellNumberInput.value = client.CellNumber || '';
+        clientTypeSelect.value = client.ClientTypeId || '';
+        yearEndSelect.value = client.YearEndId || '';
+        clientStatusSelect.value = client.ClientStatusId || '';
+
+        // *** REMOVED call to populateServiceCheckboxesFromString ***
+        console.log("Form population complete (Edit Mode).");
+
+    } else
+    {
+        // Add mode: Clear the form
+        console.log("Clearing form for Add Mode.");
+        pageTitle.textContent = "Add New Client";
+        clientForm.reset();
+        // *** REMOVED clearing of service checkboxes ***
+        console.log("Form cleared (Add Mode).");
     }
-
-    const { client } = clientData;
-
-    console.log("Populating form with data:", client);
-    pageTitle.textContent = `Client Information - ${client.ClientName || 'Unnamed Client'} (ID: ${client.Id})`;
-
-    // *** CORRECTED property access to match DB column names / LATEST error hint ***
-    clientNameInput.value = client.ClientName || '';
-    contactNameInput.value = client.ContactName || '';
-    emailAddressInput.value = client.EmailAddress || '';
-    addressTextarea.value = client.Address || '';
-    billingCodeInput.value = client.BillingCode || '';
-    ckidNumberInput.value = client.CkIdNumber || ''; // Use DB name CkIdNumber
-    vatNumberInput.value = client.VatNumber || '';   // Use DB name
-    payeNumberInput.value = client.PayeNumber || '';  // Use DB name
-    uifNumberInput.value = client.UifNumber || '';   // Use DB name
-    sdlNumberInput.value = client.SdlNumber || '';   // Use DB name
-    taxNumberInput.value = client.TaxNumber || '';
-    wcaNumberInput.value = client.WcaNumber || '';   // Use DB name
-    telNumberInput.value = client.TelNumber || '';
-    cellNumberInput.value = client.CellNumber || '';
-
-    clientTypeSelect.value = client.ClientTypeId || '';
-    yearEndSelect.value = client.YearEndId || '';
-    clientStatusSelect.value = client.ClientStatusId || '';
-
-    // --- Populate Services Checkboxes based on the varchar 'Services' column ---
-    populateServiceCheckboxesFromString(client.Services);
-
-    console.log("Form population complete.");
 }
 
-// --- Helper function to Populate Services Checkboxes from String ---
-// This assumes the 'Services' column stores service IDs separated by a comma (e.g., "1,5,11")
-// Adjust the separator if needed.
-function populateServiceCheckboxesFromString(servicesString)
-{
-    const serviceCheckboxes = servicesContainer.querySelectorAll('.service-checkbox');
-    serviceCheckboxes.forEach(checkbox => checkbox.checked = false); // Uncheck all first
+// *** REMOVED populateServiceCheckboxesFromString function ***
 
-    if (!servicesString)
-    {
-        console.log("No services string found for this client.");
-        return; // No services to check
-    }
-
-    const selectedServiceIds = servicesString.split(',') // Adjust separator if needed (e.g., ';', ' ')
-        .map(idStr => idStr.trim()) // Trim whitespace
-        .filter(idStr => idStr !== ''); // Remove empty strings
-
-    console.log("Populating services checkboxes with IDs from string:", selectedServiceIds);
-
-    selectedServiceIds.forEach(serviceIdStr =>
-    {
-        // Find the checkbox. Assuming ID is "service-{ID}" like "service-5"
-        const checkbox = document.getElementById(`service-${serviceIdStr}`);
-        if (checkbox)
-        {
-            checkbox.checked = true;
-            console.log(`Checkbox for service ID ${serviceIdStr} checked.`);
-        } else
-        {
-            console.warn(`Checkbox with ID 'service-${serviceIdStr}' not found in HTML.`);
-        }
-    });
-}
-
-
-// --- 6. Handle Form Submission (Update Logic) ---
+// --- 6. Handle Form Submission (Handles Both Add and Update) ---
 clientForm.addEventListener('submit', async (event) =>
 {
-    event.preventDefault(); // Prevent default browser submission
-    resetInactivityTimer(); // User is active
+    event.preventDefault();
+    resetInactivityTimer();
 
-    // --- ADDED CONFIRMATION STEP ---
-    // Get client name for the confirmation message (optional but nice)
-    const currentClientName = clientNameInput.value.trim() || 'this client';
-    if (!confirm(`Are you sure you want to update the details for ${currentClientName}?`))
-    {
-        console.log("Client update cancelled by user.");
-        return; // Stop the function if user clicks Cancel
-    }
-    // --- END OF CONFIRMATION STEP ---
-
-
-    // --- Proceed with update if confirmed ---
     const clientId = getClientIdFromUrl();
-    if (!clientId)
+    const confirmMessage = currentMode === 'add'
+        ? "Are you sure you want to add this new client?"
+        : `Are you sure you want to update the details for ${clientNameInput.value.trim() || 'this client'}?`;
+
+    if (!confirm(confirmMessage))
     {
-        alert("Cannot update: Client ID is missing.");
+        console.log(`Client ${currentMode} cancelled by user.`);
         return;
     }
 
-    console.log(`Updating client ID: ${clientId}`);
-    const submitButton = clientForm.querySelector('button[type="submit"]');
+    console.log(`Attempting to ${currentMode} client...`);
     const originalButtonText = submitButton.textContent;
-    submitButton.textContent = 'Updating...';
+    submitButton.textContent = currentMode === 'add' ? 'Saving...' : 'Updating...';
     submitButton.disabled = true;
 
-    // --- Helper function to get checked service IDs as a string ---
-    function getCheckedServicesString()
-    {
-        const checkedBoxes = servicesContainer.querySelectorAll('.service-checkbox:checked');
-        const serviceIds = Array.from(checkedBoxes).map(cb =>
-        {
-            // Extract ID from checkbox id="service-X"
-            return cb.id.split('-')[1];
-        });
-        return serviceIds.join(','); // Join with comma (adjust separator if needed)
-    }
+    // *** REMOVED getCheckedServicesString function and its call ***
 
     // 1. Collect data from the form
-    const updatedData = {
+    const clientDataPayload = {
         ClientName: clientNameInput.value.trim(),
         ContactName: contactNameInput.value.trim(),
         EmailAddress: emailAddressInput.value.trim(),
         Address: addressTextarea.value.trim(),
         BillingCode: billingCodeInput.value.trim(),
         ClientTypeId: parseInt(clientTypeSelect.value) || null,
-        CkIdNumber: ckidNumberInput.value.trim(),     // Use DB name CkIdNumber
-        VatNumber: vatNumberInput.value.trim(),      // Use DB name
-        PayeNumber: payeNumberInput.value.trim(),     // Use DB name
-        UifNumber: uifNumberInput.value.trim(),      // Use DB name
-        SdlNumber: sdlNumberInput.value.trim(),      // Use DB name
+        CkIdNumber: ckidNumberInput.value.trim(),
+        VatNumber: vatNumberInput.value.trim(),
+        PayeNumber: payeNumberInput.value.trim(),
+        UifNumber: uifNumberInput.value.trim(),
+        SdlNumber: sdlNumberInput.value.trim(),
         TaxNumber: taxNumberInput.value.trim(),
-        WcaNumber: wcaNumberInput.value.trim(),      // Use DB name
+        WcaNumber: wcaNumberInput.value.trim(),
         TelNumber: telNumberInput.value.trim(),
         CellNumber: cellNumberInput.value.trim(),
         YearEndId: parseInt(yearEndSelect.value) || null,
         ClientStatusId: parseInt(clientStatusSelect.value) || null,
-        Services: getCheckedServicesString() // Get updated services string
+        // *** REMOVED 'Services' property from payload ***
     };
 
     try
     {
-        // 2. Send the update request to Supabase
-        const { data, error } = await supabase
-            .from('Clients')
-            .update(updatedData)
-            .eq('Id', clientId)
-            .select()
-            .single();
+        let data, error;
 
+        // 2. Perform Supabase Operation based on mode
+        if (currentMode === 'add')
+        {
+            const { data: insertData, error: insertError } = await supabase
+                .from('Clients')
+                .insert([clientDataPayload])
+                .select()
+                .single();
+            data = insertData;
+            error = insertError;
+        } else
+        { // 'edit'
+            if (!clientId)
+            {
+                console.error("Client ID is missing during update attempt in edit mode.");
+                throw new Error("Client ID is missing for update operation.");
+            }
+            const { data: updateData, error: updateError } = await supabase
+                .from('Clients')
+                .update(clientDataPayload)
+                .eq('Id', clientId)
+                .select()
+                .single();
+            data = updateData;
+            error = updateError;
+        }
+
+        // 3. Handle Result
         if (error)
         {
-            console.error('Error updating client:', error);
-            // Provide more specific error from Supabase
-            alert(`Error updating client: ${error.message} (Code: ${error.code}) Hint: ${error.hint || 'N/A'}`);
+            console.error(`Error ${currentMode === 'add' ? 'adding' : 'updating'} client:`, error);
+            alert(`Error ${currentMode === 'add' ? 'adding' : 'updating'} client: ${error.message} (Code: ${error.code}) Hint: ${error.hint || 'N/A'}`);
         } else
         {
-            console.log('Client updated successfully:', data);
-            alert('Client details updated successfully!');
-            pageTitle.textContent = `Client Information - ${data.ClientName || 'Unnamed Client'} (ID: ${data.Id})`;
-            // Re-populate checkboxes in case DB modified the string (unlikely but good practice)
-            populateServiceCheckboxesFromString(data.Services);
+            console.log(`Client ${currentMode === 'add' ? 'added' : 'updated'} successfully:`, data);
+            alert(`Client ${currentMode === 'add' ? 'added' : 'updated'} successfully!`);
+
+            if (currentMode === 'add' && data?.Id)
+            {
+                console.log(`Redirecting to edit view for new client ID: ${data.Id}`);
+                window.location.href = `ClientView.html?clientId=${data.Id}`;
+                return;
+            } else if (currentMode === 'edit' && data)
+            {
+                // Repopulate form title in case name changed
+                pageTitle.textContent = `Client Information - ${data.ClientName || 'Unnamed Client'} (ID: ${data.Id})`;
+                // *** REMOVED re-population of checkboxes ***
+            }
         }
 
     } catch (err)
     {
-        console.error('An unexpected error occurred during update:', err);
-        alert('An unexpected error occurred while updating. Please check console.');
+        console.error(`An unexpected error occurred during ${currentMode}:`, err);
+        alert(`An unexpected error occurred during ${currentMode}. Please check console.`);
     } finally
     {
-        // Re-enable the button and restore text regardless of success/failure
-        submitButton.textContent = originalButtonText;
-        submitButton.disabled = false;
+        // Re-enable button only if not redirecting after add
+        if (!(currentMode === 'add' && data && !error))
+        {
+            submitButton.textContent = originalButtonText;
+            submitButton.disabled = false;
+        }
     }
 });
 
@@ -390,18 +376,98 @@ if (cancelButton)
 {
     cancelButton.addEventListener('click', () =>
     {
-        resetInactivityTimer(); // User interaction
-        // Ask for confirmation if changes were made (more advanced)
-        // For now, just navigate back to the clients list
+        resetInactivityTimer();
         if (confirm("Are you sure you want to cancel? Any unsaved changes will be lost."))
         {
-            window.location.href = 'AllClients.html'; // Go back to the list view
+            window.location.href = 'AllClients.html';
         }
     });
 }
 
+// --- *** NEW Notes Section Functions *** ---
 
-// --- 8. Authentication Check & Initial Load ---
+// Function to display sample notes (replace with actual data fetching later)
+function displaySampleNotes()
+{
+    if (!notesTableBody)
+    {
+        console.error("Notes table body not found!");
+        return;
+    }
+
+    // Sample Data (array of objects)
+    const sampleNotes = [
+        { id: 1, date: '2024-07-25', content: 'Initial meeting held. Discussed tax requirements.', createdBy: 'John Doe' },
+        { id: 2, date: '2024-07-28', content: 'Client provided previous year\'s financial statements.', createdBy: 'Jane Smith' },
+        { id: 3, date: '2024-08-01', content: 'Followed up regarding missing PAYE information.', createdBy: 'John Doe' }
+    ];
+
+    notesTableBody.innerHTML = ''; // Clear loading message or previous notes
+
+    if (sampleNotes.length === 0)
+    {
+        notesTableBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No notes found for this client.</td></tr>';
+        return;
+    }
+
+    sampleNotes.forEach(note =>
+    {
+        const row = document.createElement('tr');
+        // Use sample ID for now in onclick handlers
+        row.innerHTML = `
+            <td>${note.date || 'N/A'}</td>
+            <td>${note.content || ''}</td>
+            <td>${note.createdBy || 'N/A'}</td>
+            <td>
+                <button class="button" onclick="editNote(${note.id})">Edit</button>
+                <button class="button" onclick="deleteNote(${note.id}, '${(note.content || '').substring(0, 30).replace(/'/g, "\\'") + '...'}')">Delete</button>
+            </td>
+        `;
+        notesTableBody.appendChild(row);
+    });
+}
+
+// Placeholder function for adding a note
+function addNote()
+{
+    resetInactivityTimer();
+    console.log("Add Note button clicked - Placeholder");
+    alert("Add Note functionality not yet implemented.");
+    // Later: Open a modal or navigate to a new note form
+}
+
+// Placeholder function for editing a note
+function editNote(noteId)
+{
+    resetInactivityTimer();
+    console.log(`Edit Note button clicked for note ID: ${noteId} - Placeholder`);
+    alert(`Edit Note functionality for ID ${noteId} not yet implemented.`);
+    // Later: Open a modal with the note content or navigate to an edit form
+}
+
+// Placeholder function for deleting a note
+function deleteNote(noteId, notePreview)
+{
+    resetInactivityTimer();
+    console.log(`Delete Note button clicked for note ID: ${noteId} - Placeholder`);
+    if (confirm(`Are you sure you want to delete this note?\n\n"${notePreview}"`))
+    {
+        alert(`Delete Note functionality for ID ${noteId} not yet implemented. \n(If implemented, note would be deleted)`);
+        // Later: Call Supabase to delete the note and refresh the list
+        // For now, we could remove the row from the sample display:
+        // const rowToDelete = notesTableBody.querySelector(`button[onclick^="deleteNote(${noteId},"]`).closest('tr');
+        // if (rowToDelete) rowToDelete.remove();
+        // displaySampleNotes(); // Or just refresh the sample data display
+    } else
+    {
+        console.log(`Deletion cancelled for note ID: ${noteId}`);
+    }
+}
+
+// --- END NEW Notes Section Functions ---
+
+
+// --- 8. Authentication Check & Initial Load (Modified for Mode Handling) ---
 async function checkAuthAndLoadClientView()
 {
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -421,11 +487,25 @@ async function checkAuthAndLoadClientView()
         console.log("No active session found on ClientView. Redirecting to login.");
         stopInactivityDetection();
         window.location.href = 'login.html';
-    } else
-    {
-        console.log("User is authenticated on ClientView. Loading client data...");
-        setupInactivityDetection(); // Start inactivity timer
+        return;
+    }
 
+    console.log("User is authenticated on ClientView.");
+    setupInactivityDetection();
+
+    currentMode = getModeFromUrl();
+    console.log("Current Mode:", currentMode);
+
+    if (currentMode === 'add')
+    {
+        populateForm(null); // Clear the form
+        submitButton.textContent = 'Save New Client';
+        clientForm.style.display = '';
+        document.querySelector('.client-view-bottom-section').style.display = ''; // Ensure bottom section is visible
+
+    } else
+    { // 'edit'
+        submitButton.textContent = 'Update Client';
         const clientId = getClientIdFromUrl();
         if (clientId)
         {
@@ -433,20 +513,27 @@ async function checkAuthAndLoadClientView()
             if (clientData)
             {
                 populateForm(clientData);
-                // Service checkboxes are now populated within populateForm
             } else
             {
-                // Error/Not Found message already shown in fetchClientData
-                console.log("Client data could not be fetched or found.");
+                // Keep button text as 'Update Client' but form might be hidden by fetch error
+                console.log("Client data could not be fetched or found for edit.");
+                // Hide notes section if client load failed
+                document.querySelector('.client-view-bottom-section').style.display = 'none';
             }
         } else
         {
-            pageTitle.textContent = "Client View - No Client Selected";
-            // Corrected typo cumbersome->in below
-            alert("No client ID specified in the URL. Please select a client from the list.");
+            pageTitle.textContent = "Client View - No Client Selected for Edit";
+            alert("No client ID specified in the URL for editing. Please select a client from the list.");
             clientForm.style.display = 'none';
-            document.querySelector('.client-view-bottom-section').style.display = 'none'; // Hide services too
+            document.querySelector('.client-view-bottom-section').style.display = 'none';
         }
+    }
+
+    // --- Display notes regardless of mode (as long as the bottom section is visible) ---
+    // Check if the bottom section is displayed before trying to load notes
+    if (document.querySelector('.client-view-bottom-section').style.display !== 'none')
+    {
+        displaySampleNotes(); // *** ADDED call to display sample notes ***
     }
 }
 
@@ -458,5 +545,3 @@ window.addEventListener('beforeunload', () =>
 {
     clearTimeout(inactivityTimerId);
 });
-
-// --- END OF FILE clientview.js ---

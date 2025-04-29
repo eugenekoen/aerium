@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="app.css">
-    <title>Aerium - All Clients</title>
+    <link rel="shortcut icon" href="assets/app_icon.png" />
+    <title>Client View</title>
     <!-- Include the Supabase JS library via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -17,7 +18,6 @@
         <a class="sidenav-profile" href="index.html">Home</a>
         <!-- Make this link active or styled differently if desired -->
         <a href="AllClients.html">Clients</a>
-        <a href="ClientView.html">Client View</a>
 
         <div class="sidenav-bottom">
             <a href="#" onclick="handleLogout(); return false;">Logout</a>
@@ -32,14 +32,12 @@
                 <h2>Client Information - [Client Name/ID Here]</h2>
 
                 <form id="client-form">
+                    <!-- Existing form rows (Client Name, Contact Name, etc.) remain unchanged -->
                     <div class="row">
                         <div class="column">
                             <div class="form-group">
                                 <label class="label-class" for="clientName">Client Name:</label>
-                                <!-- Replaced InputText with input -->
                                 <input type="text" id="clientName" class="input-client-view" />
-                                <!-- Placeholder for validation message -->
-                                <!-- <span class="validation-message" data-valmsg-for="clientName"></span> -->
                             </div>
                             <div class="form-group">
                                 <label class="label-class" for="contactName">Contact Name:</label>
@@ -51,7 +49,6 @@
                             </div>
                             <div class="form-group">
                                 <label class="label-class-textarea" for="address">Address:</label>
-                                <!-- Replaced InputTextArea with textarea -->
                                 <textarea id="address" class="form-control" rows="5"></textarea>
                             </div>
                             <div class="form-group column-short">
@@ -62,7 +59,6 @@
                         <div class="column">
                             <div class="form-group">
                                 <label class="label-class" for="clientType">Client Type:</label>
-                                <!-- Replaced InputSelect with select -->
                                 <select id="clientType" class="form-control select-class">
                                     <option value="" selected>-- Select Type --</option>
                                     <option value="1">Private Company (Pty) Ltd</option>
@@ -145,76 +141,43 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Buttons - removed @onclick, added basic onclick stubs for illustration -->
+                    <!-- Buttons - remain unchanged -->
                     <button class="button" type="submit">Update Client</button>
                     <button class="button" type="button">Cancel</button>
                 </form>
             </div>
+
+            <!-- **** START OF MODIFIED BOTTOM SECTION **** -->
             <div class="client-view-bottom-section">
-                <h2>SERVICES OFFERED</h2>
-                <table>
-                    <!-- Static representation of the service checkbox table loop -->
-                    <tr>
-                        <td>
-                            <input class="service-checkbox" type="checkbox" id="service-0" />
-                            <label for="service-0">Annual Tax Returns</label>
-                        </td>
-                        <td>
-                            <input class="service-checkbox" type="checkbox" id="service-1" />
-                            <label for="service-1">Annual Audit</label>
-                        </td>
-                        <td>
-                            <input class="service-checkbox" type="checkbox" id="service-2" />
-                            <label for="service-2">Tax Clearance Certificates</label>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input class="service-checkbox" type="checkbox" id="service-3" />
-                            <label for="service-3">IRP6 (Prov) Returns</label>
-                        </td>
-                        <td>
-                            <input class="service-checkbox" type="checkbox" id="service-4" />
-                            <label for="service-4">Annual Financial Statements</label>
-                        </td>
-                        <td>
-                            <input class="service-checkbox" type="checkbox" id="service-5" />
-                            <label for="service-5">CIPC Annual Disclosure</label>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input class="service-checkbox" type="checkbox" id="service-6" />
-                            <label for="service-6">EMP 201 Returns</label>
-                        </td>
-                        <td>
-                            <input class="service-checkbox" type="checkbox" id="service-7" />
-                            <label for="service-7">Management Accounts</label>
-                        </td>
-                        <td>
-                            <input class="service-checkbox" type="checkbox" id="service-8" />
-                            <label for="service-8">BEE Consulting</label>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input class="service-checkbox" type="checkbox" id="service-9" />
-                            <label for="service-9">EMP501 Returns</label>
-                        </td>
-                        <td>
-                            <input class="service-checkbox" type="checkbox" id="service-10" />
-                            <label for="service-10">Monthly Books</label>
-                        </td>
-                        <td>
-                            <input class="service-checkbox" type="checkbox" id="service-11" />
-                            <label for="service-11">IT Consulting</label>
-                        </td>
-                    </tr>
+                <h2>NOTES</h2>
+                <!-- Add Note Button -->
+                <div class="top-buttons-list-view">
+                    <!-- Reusing class from AllClients for potential styling consistency -->
+                    <button class="button" onclick="addNote()">Add Note</button>
+                </div>
+
+                <!-- Notes Table -->
+                <table class="client-list-view-table"> <!-- Reusing class from AllClients -->
+                    <thead>
+                        <tr>
+                            <th>Date Created</th>
+                            <th>Note</th>
+                            <th>Created By</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="notes-table-body">
+                        <!-- Sample data will be loaded here by JavaScript -->
+                        <tr>
+                            <td colspan="4" style="text-align: center;">Loading notes...</td>
+                        </tr>
+                    </tbody>
                 </table>
             </div>
+            <!-- **** END OF MODIFIED BOTTOM SECTION **** -->
+
         </div>
     </div>
-
 
     <script src="clientview.js" defer></script>
 

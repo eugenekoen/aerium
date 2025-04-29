@@ -113,15 +113,14 @@ async function checkAuthenticationAndLoadData()
     {
         console.error("Error getting session:", sessionError);
         tableBody.innerHTML = '<tr><td colspan="10" style="color: red; text-align: center;">Error checking authentication.</td></tr>';
-        stopInactivityDetection(); // *** ADDED: Stop detection on error ***
-        // Optionally redirect or show persistent error
+        stopInactivityDetection(); // Stop detection on error
         return;
     }
 
     if (!session)
     {
         console.log("No active session found. Redirecting to login.");
-        stopInactivityDetection(); // *** ADDED: Stop detection before redirect ***
+        stopInactivityDetection(); // Stop detection before redirect
         window.location.href = 'login.html';
     } else
     {
@@ -129,7 +128,7 @@ async function checkAuthenticationAndLoadData()
         // Initialize pagination controls after confirming authentication
         initializePaginationControls();
         loadClients(); // Load data with pagination
-        setupInactivityDetection(); // *** ADDED: Start inactivity detection ***
+        setupInactivityDetection(); // Start inactivity detection
     }
 }
 
@@ -144,6 +143,7 @@ function initializePaginationControls()
     // Previous page button
     prevPageBtn.addEventListener('click', () =>
     {
+        resetInactivityTimer(); // Add timer reset on interaction
         if (currentPage > 1)
         {
             currentPage--;
@@ -154,13 +154,20 @@ function initializePaginationControls()
     // Next page button
     nextPageBtn.addEventListener('click', () =>
     {
-        currentPage++;
-        loadClients();
+        resetInactivityTimer(); // Add timer reset on interaction
+        // Check if on last page before incrementing (using totalClients and pageSize)
+        const totalPages = Math.ceil(totalClients / pageSize);
+        if (currentPage < totalPages)
+        {
+            currentPage++;
+            loadClients();
+        }
     });
 
     // Page size select
     pageSizeSelect.addEventListener('change', () =>
     {
+        resetInactivityTimer(); // Add timer reset on interaction
         pageSize = parseInt(pageSizeSelect.value);
         currentPage = 1; // Reset to first page when changing page size
         loadClients();
@@ -181,7 +188,7 @@ async function getClientCount()
             console.error('Error fetching client count:', error);
             return 0;
         }
-
+        // console.log("Total client count:", count); // Debug log
         return count;
     } catch (err)
     {
@@ -195,13 +202,19 @@ async function loadClients()
 {
     tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">Loading clients...</td></tr>';
 
+    // Disable pagination buttons while loading
+    if (prevPageBtn) prevPageBtn.disabled = true;
+    if (nextPageBtn) nextPageBtn.disabled = true;
+
     try
     {
-        // Get the total count for pagination calculation
+        // Get the total count *before* fetching the paginated data
         totalClients = await getClientCount();
 
         // Calculate offset based on current page and page size
         const offset = (currentPage - 1) * pageSize;
+        const maxRange = offset + pageSize - 1;
+        // console.log(`Loading page ${currentPage}, size ${pageSize}, range ${offset}-${maxRange}, total ${totalClients}`); // Debug log
 
         // Fetch the clients with pagination parameters
         let { data: clients, error } = await supabase
@@ -213,12 +226,13 @@ async function loadClients()
                 YearEnds:YearEndId ( Name )
             `)
             .order('ClientName', { ascending: true })
-            .range(offset, offset + pageSize - 1);
+            .range(offset, maxRange); // Use calculated max range
 
         if (error)
         {
             console.error('Error fetching clients:', error);
             tableBody.innerHTML = `<tr><td colspan="10" style="color: red; text-align: center;">Error loading clients: ${error.message}</td></tr>`;
+            // Keep buttons disabled on error
             return;
         }
 
@@ -231,15 +245,22 @@ async function loadClients()
                 if (client.Id === undefined || client.Id === null)
                 {
                     console.warn(`[loadClients] Client found with missing ID:`, client);
+                    // Optionally skip rendering this row or show placeholder
+                    return; // Skip this iteration
                 }
 
                 const row = document.createElement('tr');
+                // Use nullish coalescing (??) for safer defaults
                 const clientTypeName = client.ClientTypes?.Name ?? 'N/A';
                 const clientStatusName = client.ClientStatuses?.Name ?? 'N/A';
                 const yearEndName = client.YearEnds?.Name ?? 'N/A';
+                const clientNameSafe = client.ClientName ?? ''; // Ensure clientName is a string for delete confirm
+
+                // Escape single quotes in clientName for the onclick attribute
+                const escapedClientName = clientNameSafe.replace(/'/g, "\\'");
 
                 row.innerHTML = `
-                    <td>${client.ClientName ?? ''}</td>
+                    <td>${clientNameSafe}</td>
                     <td>${client.ContactName ?? ''}</td>
                     <td>${clientTypeName}</td>
                     <td>${client.EmailAddress ?? ''}</td>
@@ -250,110 +271,173 @@ async function loadClients()
                     <td>${client.BillingCode ?? ''}</td>
                     <td>
                         <button class="button" onclick="editClient(${client.Id})">Edit</button>
-                        <button class="button" onclick="deleteClient(${client.Id}, '${client.ClientName}')">Delete</button>
+                        <button class="button" onclick="deleteClient(${client.Id}, '${escapedClientName}')">Delete</button>
                     </td>
                 `;
                 tableBody.appendChild(row);
             });
         } else
         {
-            tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">No clients found.</td></tr>';
+            // Handle case where current page might be empty after deletion or filter change
+            if (currentPage > 1)
+            {
+                tableBody.innerHTML = `<tr><td colspan="10" style="text-align: center;">No clients found on this page. <button class="button" onclick="currentPage=1; loadClients();">Go to First Page</button></td></tr>`; // Added button class
+            } else
+            {
+                tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center;">No clients found.</td></tr>';
+            }
         }
 
-        // Update pagination controls
+        // Update pagination controls AFTER data is loaded and total count is known
         updatePaginationControls();
 
     } catch (err)
     {
         console.error('An unexpected error occurred:', err);
         tableBody.innerHTML = '<tr><td colspan="10" style="color: red; text-align: center;">An unexpected error occurred. Check console.</td></tr>';
+        // Keep buttons disabled on error
     }
 }
 
 // --- Update Pagination Controls Based on Current State ---
 function updatePaginationControls()
 {
-    // Calculate total pages
-    const totalPages = Math.ceil(totalClients / pageSize);
+    // Calculate total pages (ensure pageSize isn't zero)
+    const totalPages = pageSize > 0 ? Math.ceil(totalClients / pageSize) : 1;
+
+    // Correct current page if it's out of bounds (e.g., after deletion)
+    // Do this *before* setting the text or disabling buttons based on current page
+    if (currentPage > totalPages && totalPages > 0)
+    {
+        console.log(`Current page ${currentPage} is out of bounds (max ${totalPages}). Resetting to page ${totalPages}.`);
+        currentPage = totalPages;
+        // !!! Important: Reload data if page changes !!!
+        loadClients();
+        return; // Exit early as loadClients will call this again
+    } else if (currentPage < 1)
+    {
+        currentPage = 1; // Should not happen with current logic, but safety check
+    }
+
 
     // Update page info text
-    pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+    if (pageInfo)
+    { // Check if element exists
+        pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+    }
 
     // Enable/disable previous button
-    prevPageBtn.disabled = currentPage <= 1;
+    if (prevPageBtn)
+    {
+        prevPageBtn.disabled = currentPage <= 1;
+    }
 
     // Enable/disable next button
-    nextPageBtn.disabled = currentPage >= totalPages;
+    if (nextPageBtn)
+    {
+        nextPageBtn.disabled = currentPage >= totalPages || totalClients === 0;
+    }
 }
 
-// --- Placeholder functions for Edit/Delete ---
+// --- Edit Client Function ---
 function editClient(clientId)
 {
-    console.log(`[editClient] Function called with ID: ${clientId}`); // Log 1: Check if function is called with an ID
-    console.log(`[editClient] Type of ID: ${typeof clientId}`);       // Log 2: Check the type (should be number)
+    console.log(`[editClient] Function called with ID: ${clientId}`); // Log 1
+    console.log(`[editClient] Type of ID: ${typeof clientId}`);       // Log 2
 
-    // Basic check if clientId is valid
     if (clientId === undefined || clientId === null || clientId === '')
     {
         console.error("[editClient] Invalid clientId received:", clientId);
         alert("Error: Could not get a valid Client ID to navigate.");
-        return; // Stop execution if ID is bad
+        return;
     }
 
     resetInactivityTimer();
 
-    // Construct the URL for ClientView.html with the clientId as a query parameter
     const editUrl = `ClientView.html?clientId=${clientId}`;
-    console.log(`[editClient] Constructed URL: ${editUrl}`); // Log 3: Check the final URL
+    console.log(`[editClient] Constructed URL: ${editUrl}`); // Log 3
 
     try
     {
-        // Navigate to the Client View page
         window.location.href = editUrl;
-        console.log("[editClient] Navigation attempted."); // Log 4: Confirm navigation call
+        console.log("[editClient] Navigation attempted."); // Log 4
     } catch (e)
     {
         console.error("[editClient] Error during navigation attempt:", e);
         alert("An error occurred while trying to navigate to the client view.");
     }
-
 }
 
-function deleteClient(clientId, clientName)
+// --- Delete Client Function (with Supabase Call) ---
+async function deleteClient(clientId, clientName)
 {
-    resetInactivityTimer();
+    resetInactivityTimer(); // User interaction, reset timer
 
-    if (confirm(`Are you sure you want to delete client: ${clientName}? This action cannot be undone.`))
+    const safeClientName = clientName || `Client ID ${clientId}`;
+
+    if (confirm(`Are you sure you want to delete client: ${safeClientName}? \n\nTHIS ACTION CANNOT BE UNDONE.`))
     {
-        alert(`Deleting client with ID: ${clientId}`);
-        // Add your delete logic here (call Supabase delete)
-        // Remember to reset the inactivity timer as this is user interaction
+        console.log(`Attempting to delete client with ID: ${clientId}`);
 
-        // After successful deletion, you might want to reload the client list:
-        // loadClients();
+        const deleteButtons = document.querySelectorAll(`button[onclick^="deleteClient(${clientId},"]`);
+        try
+        {
+            deleteButtons.forEach(btn => btn.disabled = true); // Disable button
+
+            const { error } = await supabase
+                .from('Clients')
+                .delete()
+                .eq('Id', clientId);
+
+            if (error)
+            {
+                console.error('Error deleting client:', error);
+                alert(`Failed to delete client "${safeClientName}": ${error.message}`);
+                deleteButtons.forEach(btn => btn.disabled = false); // Re-enable on error
+            } else
+            {
+                console.log(`Client ID: ${clientId} (${safeClientName}) deleted successfully.`);
+                alert(`Client "${safeClientName}" deleted successfully.`);
+
+                // --- Reload the client list ---
+                // No need to explicitly decrement currentPage here anymore,
+                // updatePaginationControls will handle being out of bounds after reload.
+                totalClients--; // Decrement total count locally for pagination logic
+                loadClients(); // Reload data which will trigger pagination update
+            }
+        } catch (err)
+        {
+            console.error('An unexpected error occurred during deletion:', err);
+            alert('An unexpected error occurred during deletion. Check console.');
+            deleteButtons.forEach(btn => btn.disabled = false); // Re-enable on error
+        }
+
     } else
     {
-        // User cancelled, still counts as activity
-        resetInactivityTimer();
+        console.log('Client deletion cancelled by user.');
     }
+}
+
+// --- Navigate to Add Client View ---
+function navigateToAddClient()
+{
+    console.log("[navigateToAddClient] Navigating to Client View in add mode.");
+    resetInactivityTimer();
+    window.location.href = 'ClientView.html?mode=add';
 }
 
 // --- Logout Function ---
 async function handleLogout()
 {
-    stopInactivityDetection(); // *** ADDED: Stop inactivity detection FIRST ***
-
+    stopInactivityDetection();
     const { error } = await supabase.auth.signOut();
     if (error)
     {
         console.error('Error logging out:', error);
         alert(`Logout failed: ${error.message}`);
-        // Optional: Decide if you should restart inactivity detection if logout fails
-        // setupInactivityDetection(); // Maybe? Or just let the page potentially reload/error out.
     } else
     {
         console.log('User logged out successfully.');
-        // Redirect happens AFTER cleanup and sign out attempt
         window.location.href = 'login.html';
     }
 }
@@ -362,8 +446,7 @@ async function handleLogout()
 document.addEventListener('DOMContentLoaded', checkAuthenticationAndLoadData);
 
 // --- Optional: Cleanup on Page Unload ---
-// This helps clear the timer if the user closes the tab/navigates away without logging out.
 window.addEventListener('beforeunload', () =>
 {
-    clearTimeout(inactivityTimerId); // Just clear the timer, don't try removing listeners here.
+    clearTimeout(inactivityTimerId); // Just clear the timer
 });

@@ -228,6 +228,11 @@ async function loadClients()
         {
             clients.forEach(client =>
             {
+                if (client.Id === undefined || client.Id === null)
+                {
+                    console.warn(`[loadClients] Client found with missing ID:`, client);
+                }
+
                 const row = document.createElement('tr');
                 const clientTypeName = client.ClientTypes?.Name ?? 'N/A';
                 const clientStatusName = client.ClientStatuses?.Name ?? 'N/A';
@@ -284,20 +289,46 @@ function updatePaginationControls()
 // --- Placeholder functions for Edit/Delete ---
 function editClient(clientId)
 {
-    alert(`Edit client with ID: ${clientId}`);
-    // Add your edit logic here, maybe redirect to an edit page
-    // Remember to reset the inactivity timer if the user interacts with the edit UI
+    console.log(`[editClient] Function called with ID: ${clientId}`); // Log 1: Check if function is called with an ID
+    console.log(`[editClient] Type of ID: ${typeof clientId}`);       // Log 2: Check the type (should be number)
+
+    // Basic check if clientId is valid
+    if (clientId === undefined || clientId === null || clientId === '')
+    {
+        console.error("[editClient] Invalid clientId received:", clientId);
+        alert("Error: Could not get a valid Client ID to navigate.");
+        return; // Stop execution if ID is bad
+    }
+
     resetInactivityTimer();
+
+    // Construct the URL for ClientView.html with the clientId as a query parameter
+    const editUrl = `ClientView.html?clientId=${clientId}`;
+    console.log(`[editClient] Constructed URL: ${editUrl}`); // Log 3: Check the final URL
+
+    try
+    {
+        // Navigate to the Client View page
+        window.location.href = editUrl;
+        console.log("[editClient] Navigation attempted."); // Log 4: Confirm navigation call
+    } catch (e)
+    {
+        console.error("[editClient] Error during navigation attempt:", e);
+        alert("An error occurred while trying to navigate to the client view.");
+    }
+
 }
 
 function deleteClient(clientId, clientName)
 {
-    if (confirm(`Are you sure you want to delete client: ${clientName}?`))
+    resetInactivityTimer();
+
+    if (confirm(`Are you sure you want to delete client: ${clientName}? This action cannot be undone.`))
     {
         alert(`Deleting client with ID: ${clientId}`);
         // Add your delete logic here (call Supabase delete)
         // Remember to reset the inactivity timer as this is user interaction
-        resetInactivityTimer();
+
         // After successful deletion, you might want to reload the client list:
         // loadClients();
     } else

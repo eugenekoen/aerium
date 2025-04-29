@@ -109,6 +109,46 @@ body {
 
 /* CLIENT LIST VIEW */
 
+/* CLIENT NOTE VIEW */
+
+.client-note-view-table {
+    margin: 20px;
+    border-collapse: collapse;
+    font-family: "Roboto", sans-serif;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.client-note-view-table th {
+    border: 1px solid black;
+    padding: 7px;
+    font-size: 15px;
+}
+
+.client-note-view-table .tabledate {
+    width: auto;
+    text-align: center;
+}
+
+.client-note-view-table .table-user {
+    width: auto;
+}
+
+.client-note-view-table .table-actions {
+    width: auto;
+}
+
+.client-note-view-table .table-note {
+    width: 725px;
+}
+
+.client-note-view-table td {
+    border: 1px solid black;
+    padding: 7px;
+}
+
+/* CLIENT NOTE VIEW */
+
 /* LOGIN PAGE */
 
 .login-body {
@@ -339,32 +379,6 @@ textarea {
     margin-left: 15px;
     font-family: "Roboto", sans-serif;
     font-size: 20px;
-}
-
-.client-view-bottom-section table {
-    width: 70%;
-    /* Make the table span the full width */
-    margin-left: 10px;
-}
-
-.client-view-bottom-section table td {
-    padding: 0.5rem;
-    /* Add some padding to each cell */
-    text-align: left;
-    /* Align text to the left */
-    width: 100px;
-}
-
-
-
-.client-view-bottom-section table td label {
-    font-family: "Roboto", sans-serif;
-    font-size: 15px;
-}
-
-.service-checkbox {
-    transform: scale(1.1);
-    vertical-align: auto;
 }
 
 

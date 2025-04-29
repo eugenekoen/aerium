@@ -148,26 +148,35 @@
             </div>
 
             <!-- **** START OF MODIFIED BOTTOM SECTION **** -->
-            <div class="client-view-bottom-section">
+            <div class="client-view-bottom-section" id="notes-section" style="display: none;">
+                <!-- Hide by default, show in JS for edit mode -->
                 <h2>NOTES</h2>
-                <!-- Add Note Button -->
-                <div class="top-buttons-list-view">
-                    <!-- Reusing class from AllClients for potential styling consistency -->
-                    <button class="button" onclick="addNote()">Add Note</button>
+
+                <!-- Add Note Form -->
+                <div class="add-note-form" style="margin: 20px;">
+                    <label for="new-note-content"
+                        style="display: block; margin-bottom: 5px; font-family: 'Roboto', sans-serif;">Add New
+                        Note:</label>
+                    <textarea id="new-note-content" rows="4"
+                        style="width: 90%; max-width: 700px; margin-bottom: 10px; font-size: 14px; font-family: 'Roboto', sans-serif;"></textarea>
+                    <button id="save-note-button" class="button" onclick="saveNewNote()">Save Note</button>
+                    <span id="note-status" style="margin-left: 10px; font-family: 'Roboto', sans-serif;"></span>
+                    <!-- For status messages -->
                 </div>
+                <!-- End Add Note Form -->
 
                 <!-- Notes Table -->
-                <table class="client-list-view-table"> <!-- Reusing class from AllClients -->
+                <table class="client-note-view-table">
                     <thead>
                         <tr>
-                            <th>Date Created</th>
+                            <th style="width: 150px;">Date Created</th> <!-- Adjust width as needed -->
                             <th>Note</th>
-                            <th>Created By</th>
-                            <th>Actions</th>
+                            <th style="width: 180px;">Created By</th> <!-- Adjust width -->
+                            <th style="width: 120px;">Actions</th> <!-- Adjust width -->
                         </tr>
                     </thead>
                     <tbody id="notes-table-body">
-                        <!-- Sample data will be loaded here by JavaScript -->
+                        <!-- Notes will be loaded here by JavaScript -->
                         <tr>
                             <td colspan="4" style="text-align: center;">Loading notes...</td>
                         </tr>

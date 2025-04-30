@@ -1,14 +1,16 @@
+// js/clientview.js
+
 // --- 1. Import Shared Functionality ---
 import
-{
-    supabase,
-    checkAuthAndRedirect,
-    handleLogout, // Keep for potential direct use if needed
-    setupInactivityDetection,
-    stopInactivityDetection, // Keep for cleanup if needed
-    loadSidebar,
-    resetInactivityTimer
-} from './shared.js';
+    {
+        supabase,
+        checkAuthAndRedirect,
+        // handleLogout, // Likely handled by sidebar now
+        setupInactivityDetection,
+        // stopInactivityDetection, // Likely handled by shared.js unload
+        loadSidebar,
+        resetInactivityTimer
+    } from './shared.js';
 
 // --- 2. DOM Element References ---
 const clientNameInput = document.getElementById('clientName');
@@ -16,6 +18,7 @@ const contactNameInput = document.getElementById('contactName');
 const emailAddressInput = document.getElementById('emailAddress');
 const addressTextarea = document.getElementById('address');
 const billingCodeInput = document.getElementById('billingCode');
+const clientCodeInput = document.getElementById('clientCode'); // **** ADDED ****
 const clientTypeSelect = document.getElementById('clientType');
 const ckidNumberInput = document.getElementById('ckidNumber');
 const vatNumberInput = document.getElementById('vatNumber');
@@ -29,7 +32,7 @@ const cellNumberInput = document.getElementById('cellNumber');
 const yearEndSelect = document.getElementById('yearEnd');
 const clientStatusSelect = document.getElementById('clientStatusId');
 const clientForm = document.getElementById('client-form');
-const pageTitleElement = document.querySelector('.client-view-top-section h2'); // More specific selector
+const pageTitleElement = document.querySelector('.client-view-top-section h2');
 const submitButton = clientForm?.querySelector('button[type="submit"]');
 const cancelButton = clientForm?.querySelector('button[type="button"]');
 
@@ -41,8 +44,8 @@ const saveNoteButton = document.getElementById('save-note-button');
 const noteStatusSpan = document.getElementById('note-status');
 
 // --- 3. Global Variables ---
-let currentMode = 'edit'; // Default: 'edit' or 'add'
-let currentClientId = null; // Stores the ID of the client being viewed/edited
+let currentMode = 'edit';
+let currentClientId = null;
 
 // --- 4. Page Specific Functions ---
 
@@ -54,25 +57,37 @@ function getUrlParams()
     const mode = urlParams.get('mode');
 
     currentMode = mode === 'add' ? 'add' : 'edit';
-    currentClientId = clientId ? parseInt(clientId) : null; // Store parsed ID or null
+    currentClientId = clientId ? parseInt(clientId) : null;
 
     if (currentMode === 'edit' && (currentClientId === null || isNaN(currentClientId)))
     {
         console.error("Invalid or missing Client ID in URL for Edit mode:", clientId);
-        return false; // Indicate error
+        return false;
     }
     console.log(`Mode: ${currentMode}, Client ID: ${currentClientId}`);
-    return true; // Indicate success
+    return true;
 }
 
 // Set Page Title
-function setPageTitle(title)
-{
-    if (pageTitleElement)
+function setPageTitle(client)
+{ // Accept client object or simple title string
+    if (!pageTitleElement) return;
+
+    if (typeof client === 'string')
     {
-        pageTitleElement.textContent = title;
+        pageTitleElement.textContent = client;
+    } else if (client && client.ClientName)
+    {
+        // **** UPDATED: Optionally include ClientCode in title ****
+        const codePart = client.ClientCode ? ` (${client.ClientCode})` : '';
+        pageTitleElement.textContent = `Client Information - ${client.ClientName}${codePart}`;
+        // Original: pageTitleElement.textContent = `Client Information - ${client.ClientName || 'Unnamed Client'}`;
+    } else
+    {
+        pageTitleElement.textContent = "Client Information"; // Default
     }
 }
+
 
 // Fetch Client Data from Supabase (Only for Edit Mode)
 async function fetchClientData(clientId)
@@ -88,11 +103,12 @@ async function fetchClientData(clientId)
 
     try
     {
+        // Using select('*') implicitly includes the new ClientCode column
         const { data: client, error } = await supabase
             .from('Clients')
-            .select('*') // Select all columns for simplicity, adjust if needed
+            .select('*')
             .eq('Id', clientId)
-            .maybeSingle(); // Use maybeSingle to handle not found gracefully (returns null, not error)
+            .maybeSingle();
 
         if (error)
         {
@@ -110,7 +126,7 @@ async function fetchClientData(clientId)
         }
 
         console.log("Client data fetched:", client);
-        return client; // Return the fetched client data directly
+        return client;
 
     } catch (err)
     {
@@ -127,13 +143,12 @@ function populateForm(client)
     if (!client)
     {
         console.warn("populateForm called with null client data.");
-        clientForm.reset(); // Clear form if no data
+        if (clientForm) clientForm.reset();
         return;
     }
-    // setPageTitle(`Client Information - ${client.ClientName || 'Unnamed Client'} (ID: ${client.Id})`); - so only use this when Client Code is set
-    setPageTitle(`Client Information - ${client.ClientName || 'Unnamed Client'}`);
+    setPageTitle(client); // Pass client object to set title
 
-    // Use helper function to safely set values
+    // Helper function to safely set values
     const setValue = (element, value) => { if (element) element.value = value ?? ''; };
 
     setValue(clientNameInput, client.ClientName);
@@ -141,6 +156,7 @@ function populateForm(client)
     setValue(emailAddressInput, client.EmailAddress);
     setValue(addressTextarea, client.Address);
     setValue(billingCodeInput, client.BillingCode);
+    setValue(clientCodeInput, client.ClientCode); // **** ADDED ****
     setValue(ckidNumberInput, client.CkIdNumber);
     setValue(vatNumberInput, client.VatNumber);
     setValue(payeNumberInput, client.PayeNumber);
@@ -181,13 +197,14 @@ async function handleFormSubmit(event)
     submitButton.disabled = true;
     if (cancelButton) cancelButton.disabled = true;
 
-    // Collect data (handle potential null values from selects/inputs)
+    // Collect data
     const clientDataPayload = {
         ClientName: clientNameInput?.value?.trim() || null,
         ContactName: contactNameInput?.value?.trim() || null,
         EmailAddress: emailAddressInput?.value?.trim() || null,
         Address: addressTextarea?.value?.trim() || null,
         BillingCode: billingCodeInput?.value?.trim() || null,
+        ClientCode: clientCodeInput?.value?.trim() || null, // **** ADDED ****
         ClientTypeId: parseInt(clientTypeSelect?.value) || null,
         CkIdNumber: ckidNumberInput?.value?.trim() || null,
         VatNumber: vatNumberInput?.value?.trim() || null,
@@ -204,42 +221,52 @@ async function handleFormSubmit(event)
 
     // Basic validation
     if (!clientDataPayload.ClientName)
-    { // Require at least a client name
+    {
         alert('Client Name is required.');
         submitButton.textContent = originalButtonText;
         submitButton.disabled = false;
         if (cancelButton) cancelButton.disabled = false;
         return;
     }
+    // Optional: Add validation for ClientCode format/length if needed here
 
     let operationSuccessful = false;
 
     try
     {
-        let data, error;
+        let result; // Use a single variable for the result
 
         if (currentMode === 'add')
         {
-            ({ data, error } = await supabase
+            result = await supabase
                 .from('Clients')
                 .insert([clientDataPayload])
                 .select()
-                .single());
+                .single();
         } else
         { // 'edit'
             if (!currentClientId) throw new Error("Client ID missing for update.");
-            ({ data, error } = await supabase
+            result = await supabase
                 .from('Clients')
                 .update(clientDataPayload)
                 .eq('Id', currentClientId)
                 .select()
-                .single());
+                .single();
         }
+
+        const { data, error } = result; // Destructure result
 
         if (error)
         {
             console.error(`Error ${currentMode === 'add' ? 'adding' : 'updating'} client:`, error);
-            alert(`Error: ${error.message}`);
+            // Check for unique constraint violation on ClientCode (example)
+            if (error.code === '23505' && error.message.includes('ClientCode'))
+            {
+                alert(`Error: Client Code "${clientDataPayload.ClientCode}" already exists. Please use a unique code.`);
+            } else
+            {
+                alert(`Error: ${error.message}`);
+            }
         } else
         {
             console.log(`Client ${currentMode === 'add' ? 'added' : 'updated'} successfully:`, data);
@@ -248,15 +275,11 @@ async function handleFormSubmit(event)
 
             if (currentMode === 'add' && data?.Id)
             {
-                // Redirect to edit view for the newly created client
                 window.location.href = `ClientView.html?clientId=${data.Id}`;
-                return; // Prevent button re-enable before redirect
+                return;
             } else if (currentMode === 'edit' && data)
             {
-                // Re-populate form title in case name changed
-                setPageTitle(`Client Information - ${data.ClientName || 'Unnamed Client'} (ID: ${data.Id})`);
-                // Optional: Maybe re-fetch and display notes if something relevant changed
-                // await loadAndDisplayNotes();
+                setPageTitle(data); // Update title with potentially new name/code
             }
         }
     } catch (err)
@@ -265,11 +288,13 @@ async function handleFormSubmit(event)
         alert(`An unexpected error occurred. Please check console.`);
     } finally
     {
-        // Re-enable buttons unless redirected
         if (!operationSuccessful || currentMode === 'edit')
         {
-            submitButton.textContent = originalButtonText;
-            submitButton.disabled = false;
+            if (submitButton)
+            {
+                submitButton.textContent = originalButtonText;
+                submitButton.disabled = false;
+            }
             if (cancelButton) cancelButton.disabled = false;
         }
     }
@@ -285,8 +310,8 @@ function handleCancelClick()
     }
 }
 
-// --- Notes Section Functions ---
-
+// --- Notes Section Functions (fetchNotesForClient, displayNotes, loadAndDisplayNotes, saveNewNoteHandler, deleteNoteHandler, editNoteHandler) ---
+// --- No changes needed in these note functions for ClientCode ---
 // Fetch notes for the current client
 async function fetchNotesForClient()
 {
@@ -535,6 +560,7 @@ function editNoteHandler(noteId)
     alert(`Editing note ID ${noteId} is not yet implemented.`);
 }
 window.editNoteHandler = editNoteHandler; // Make globally accessible for onclick
+// --- END OF NOTES SECTION FUNCTIONS ---
 
 
 // --- 5. Initialization ---
@@ -545,12 +571,11 @@ async function initializePage()
 
     // 2. Check Authentication
     const session = await checkAuthAndRedirect();
-    if (!session) return; // Stop if redirected
+    if (!session) return;
 
-    // 3. Get Mode & Client ID from URL
+    // 3. Get Mode & Client ID
     if (!getUrlParams())
     {
-        // Error handling if URL params are invalid for edit mode
         setPageTitle("Error: Invalid Client ID");
         if (clientForm) clientForm.style.display = 'none';
         if (notesSectionDiv) notesSectionDiv.style.display = 'none';
@@ -563,8 +588,8 @@ async function initializePage()
         setPageTitle("Add New Client");
         if (clientForm) clientForm.reset();
         if (submitButton) submitButton.textContent = 'Save New Client';
-        if (clientForm) clientForm.style.display = ''; // Ensure form is visible
-        if (notesSectionDiv) notesSectionDiv.style.display = 'none'; // Hide notes for new client
+        if (clientForm) clientForm.style.display = '';
+        if (notesSectionDiv) notesSectionDiv.style.display = 'none';
     } else
     { // 'edit' mode
         if (submitButton) submitButton.textContent = 'Update Client';
@@ -573,21 +598,20 @@ async function initializePage()
         {
             populateForm(clientData);
             if (clientForm) clientForm.style.display = '';
-            if (notesSectionDiv) notesSectionDiv.style.display = ''; // Show notes section
-            await loadAndDisplayNotes(); // Load notes for this client
+            if (notesSectionDiv) notesSectionDiv.style.display = '';
+            await loadAndDisplayNotes(); // Load notes
         } else
         {
-            // fetchClientData handled errors and messages
+            // Error handled in fetchClientData
             if (clientForm) clientForm.style.display = 'none';
             if (notesSectionDiv) notesSectionDiv.style.display = 'none';
-            return; // Stop if client couldn't be loaded
+            return;
         }
     }
 
     // 5. Attach Form Handlers
     if (clientForm) clientForm.addEventListener('submit', handleFormSubmit);
     if (cancelButton) cancelButton.addEventListener('click', handleCancelClick);
-
 
     // 6. Start Inactivity Detection
     setupInactivityDetection();

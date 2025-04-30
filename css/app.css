@@ -473,10 +473,6 @@ body.login-body {
     padding-bottom: 10px;
 }
 
-#client-form {
-    /* Form specific styles if needed */
-}
-
 /* Form layout using Grid for better alignment */
 .client-form-grid {
     /* Add this class to the form or a wrapper div */
@@ -551,23 +547,11 @@ body.login-body {
     /* Remove fixed width */
     /* margin-top: 10px; */
     /* Handled by gap */
-    height: 100px;
+    height: 90px;
     /* Adjusted height */
     resize: vertical;
     /* Allow vertical resize */
 }
-
-#client-form select {
-    /* width: 208px; */
-    /* Remove fixed width */
-}
-
-/* Specific overrides if needed */
-/* Example: Make billing code slightly narrower if desired */
-#billingCode {
-    max-width: 150px;
-}
-
 
 /* Buttons at the bottom of the form */
 #client-form .form-buttons {

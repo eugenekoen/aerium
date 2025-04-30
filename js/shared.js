@@ -254,7 +254,7 @@ export function stopInactivityDetection()
  * @param {string} placeholderId - The ID of the div where the sidebar should be loaded. Defaults to 'sidebar-placeholder'.
  * @param {string} sidebarUrl - The path to the sidebar HTML file. Defaults to '_sidebar.html'.
  */
-export async function loadSidebar(placeholderId = 'sidebar-placeholder', sidebarUrl = '_sidebar.html')
+export async function loadSidebar(placeholderId = 'sidebar-placeholder', sidebarUrl = 'sidebar_template.html')
 {
     const placeholder = document.getElementById(placeholderId);
     if (!placeholder)

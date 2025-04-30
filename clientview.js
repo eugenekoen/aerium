@@ -1,5 +1,3 @@
-// clientview.js
-
 // --- 1. Initialize Supabase Client ---
 const SUPABASE_URL = 'https://rezjbpyicdasqlhldwok.supabase.co'; // Same as other files
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlempicHlpY2Rhc3FsaGxkd29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA2NTUwNzUsImV4cCI6MjA1NjIzMTA3NX0.o9ZN3Q7-2ijrDrry5XP3SEqOS8PKqoHF-W-LGYmtswg'; // Same as other files
@@ -282,26 +280,36 @@ clientForm.addEventListener('submit', async (event) =>
     submitButton.textContent = currentMode === 'add' ? 'Saving...' : 'Updating...';
     submitButton.disabled = true;
 
-    // 1. Collect data from the form
+    // 1. Collect data from the form (using null for empty strings)
     const clientDataPayload = {
-        ClientName: clientNameInput.value.trim(),
-        ContactName: contactNameInput.value.trim(),
-        EmailAddress: emailAddressInput.value.trim(),
-        Address: addressTextarea.value.trim(),
-        BillingCode: billingCodeInput.value.trim(),
+        ClientName: clientNameInput.value.trim() || null,
+        ContactName: contactNameInput.value.trim() || null,
+        EmailAddress: emailAddressInput.value.trim() || null,
+        Address: addressTextarea.value.trim() || null,
+        BillingCode: billingCodeInput.value.trim() || null,
         ClientTypeId: parseInt(clientTypeSelect.value) || null,
-        CkIdNumber: ckidNumberInput.value.trim(),
-        VatNumber: vatNumberInput.value.trim(),
-        PayeNumber: payeNumberInput.value.trim(),
-        UifNumber: uifNumberInput.value.trim(),
-        SdlNumber: sdlNumberInput.value.trim(),
-        TaxNumber: taxNumberInput.value.trim(),
-        WcaNumber: wcaNumberInput.value.trim(),
-        TelNumber: telNumberInput.value.trim(),
-        CellNumber: cellNumberInput.value.trim(),
+        CkIdNumber: ckidNumberInput.value.trim() || null,
+        VatNumber: vatNumberInput.value.trim() || null,
+        PayeNumber: payeNumberInput.value.trim() || null,
+        UifNumber: uifNumberInput.value.trim() || null,
+        SdlNumber: sdlNumberInput.value.trim() || null,
+        TaxNumber: taxNumberInput.value.trim() || null,
+        WcaNumber: wcaNumberInput.value.trim() || null,
+        TelNumber: telNumberInput.value.trim() || null,
+        CellNumber: cellNumberInput.value.trim() || null,
         YearEndId: parseInt(yearEndSelect.value) || null,
         ClientStatusId: parseInt(clientStatusSelect.value) || null,
     };
+
+    // Basic validation for add mode
+    if (currentMode === 'add' && !clientDataPayload.ClientName)
+    {
+        alert('Client Name cannot be empty when adding a new client.');
+        submitButton.textContent = originalButtonText;
+        submitButton.disabled = false;
+        return;
+    }
+
 
     let operationSuccessful = false;
     let resultingData = null;
@@ -352,9 +360,9 @@ clientForm.addEventListener('submit', async (event) =>
             if (currentMode === 'add' && data?.Id)
             {
                 console.log(`Redirecting to edit view for new client ID: ${data.Id}`);
-                // Set flag to prevent button re-enable before redirect
+                // Prevent button re-enable before redirect
                 window.location.href = `ClientView.html?clientId=${data.Id}`;
-                return; // Exit early to allow redirect
+                return; // Exit early
             } else if (currentMode === 'edit' && data)
             {
                 // Repopulate form title in case name changed
@@ -368,7 +376,7 @@ clientForm.addEventListener('submit', async (event) =>
         alert(`An unexpected error occurred during ${currentMode}. Please check console.`);
     } finally
     {
-        // Re-enable button only if the operation failed OR it was an edit OR add finished without redirect (error)
+        // Re-enable button only if the operation failed OR it was an edit
         if (!operationSuccessful || currentMode === 'edit')
         {
             submitButton.textContent = originalButtonText;
@@ -400,15 +408,13 @@ async function fetchNotesForClient(clientId)
     {
         console.error("Cannot fetch notes: Client ID is missing.");
         notesTableBody.innerHTML = '<tr><td colspan="4" style="color: red; text-align: center;">Cannot load notes: Client ID not available.</td></tr>';
-        return []; // Return empty array
+        return [];
     }
-    console.log(`[fetchNotesForClient] Fetching notes for client ID: ${clientId} (Type: ${typeof clientId})`);
+    console.log(`[fetchNotesForClient] Fetching notes for client ID: ${clientId}`);
     notesTableBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Loading notes...</td></tr>';
 
     try
     {
-        // *** MODIFIED SELECT STATEMENT ***
-        // Removed the problematic 'author: auth_users(email)' join
         const { data: notes, error } = await supabase
             .from('Notes')
             .select(`
@@ -417,15 +423,13 @@ async function fetchNotesForClient(clientId)
                 created_at,
                 client_id,
                 created_by
-            `) // Fetch created_by UUID instead of joining
+            `) // Fetch created_by UUID
             .eq('client_id', clientId)
             .order('created_at', { ascending: false }); // Show newest first
 
         if (error)
         {
-            // Keep existing error handling
             console.error('[fetchNotesForClient] Fetch ERROR:', error);
-            // Display a more specific error message if possible
             let errorMsg = `Error loading notes: ${error.message}`;
             if (error.details) errorMsg += ` Details: ${error.details}`;
             if (error.hint) errorMsg += ` Hint: ${error.hint}`;
@@ -433,47 +437,80 @@ async function fetchNotesForClient(clientId)
             return [];
         } else
         {
-            console.log('[fetchNotesForClient] Fetch SUCCESS. Notes received:', JSON.stringify(notes));
-            return notes;
+            console.log('[fetchNotesForClient] Fetch SUCCESS. Notes received:', notes);
+            return notes; // Return fetched notes
         }
 
     } catch (err)
     {
-        // Keep existing catch block
         console.error('[fetchNotesForClient] Unexpected error:', err);
         notesTableBody.innerHTML = '<tr><td colspan="4" style="color: red; text-align: center;">An unexpected error occurred loading notes.</td></tr>';
         return [];
     }
 }
 
-// Function to display fetched notes in the table
+// *** NEW/MODIFIED Function to display fetched notes in the table ***
 async function displayNotes(notes)
-{
-    console.log('[displayNotes] Received notes to display:', JSON.stringify(notes));
-    notesTableBody.innerHTML = '';
+{ // Ensure it's async
+    console.log('[displayNotes] Rendering notes:', notes);
+    notesTableBody.innerHTML = ''; // Clear previous content
 
     if (!notes || notes.length === 0)
     {
-        console.log('[displayNotes] No notes array or empty array, displaying "No notes found".');
+        console.log('[displayNotes] No notes found, displaying message.');
         notesTableBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No notes found for this client.</td></tr>';
         return;
     }
 
+    // 1. Get unique creator IDs from the notes
+    const creatorIds = [...new Set(notes.map(note => note.created_by).filter(id => id))]; // Filter out null/undefined IDs
+
+    // 2. Fetch profiles for these creators if there are any IDs
+    const userNamesMap = new Map();
+    if (creatorIds.length > 0)
+    {
+        console.log('[displayNotes] Fetching profiles for IDs:', creatorIds);
+        try
+        {
+            const { data: profiles, error: profileError } = await supabase
+                .from('Profiles') // Query the 'profiles' table
+                .select('id, full_name') // Select the ID and the full name
+                .in('id', creatorIds); // Match the extracted IDs
+
+            if (profileError)
+            {
+                console.error('[displayNotes] Error fetching profiles:', profileError);
+                // Proceed without names, fallbacks will be used later
+            } else if (profiles)
+            {
+                console.log('[displayNotes] Profiles fetched:', profiles);
+                profiles.forEach(profile =>
+                {
+                    // Store fetched names in the map, providing a fallback if name is empty/null
+                    userNamesMap.set(profile.id, profile.full_name?.trim() || `User (${profile.id.substring(0, 6)}...)`);
+                });
+            }
+        } catch (err)
+        {
+            console.error('[displayNotes] Unexpected error fetching profiles:', err);
+        }
+    }
+    console.log('[displayNotes] User names map created:', userNamesMap);
+
+
+    // 3. Get current user ID for ownership check (delete button)
     let currentUserId = null;
     try
     {
+        // This is okay, doesn't need to be awaited if only used sync below
         const { data: { user } } = await supabase.auth.getUser();
         currentUserId = user?.id;
     } catch (e)
     {
-        console.error("Could not get current user to check note ownership:", e);
+        console.error("[displayNotes] Could not get current user:", e);
     }
 
-    // *** OPTIONAL: Fetch user emails separately if needed (more complex) ***
-    // If you absolutely need emails, you'd collect all unique 'created_by' IDs
-    // and make another query to a 'profiles' table or similar.
-    // For simplicity now, we'll just display the UUID.
-
+    // 4. Render notes using the fetched names
     notes.forEach(note =>
     {
         const row = document.createElement('tr');
@@ -483,34 +520,33 @@ async function displayNotes(notes)
 
         const createdAtDate = note.created_at ? new Date(note.created_at) : null;
         const formattedDate = createdAtDate
-            ? createdAtDate.toLocaleDateString('en-ZA', {
-                year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false
+            ? createdAtDate.toLocaleDateString('en-ZA', { // Use 'en-ZA' or appropriate locale
+                year: 'numeric', month: 'short', day: 'numeric',
+                hour: '2-digit', minute: '2-digit', hour12: false // Use 24-hour format
             })
             : 'N/A';
 
-        // *** MODIFIED AUTHOR DISPLAY ***
-        // Display the User ID (UUID) since we don't have the email directly
-        let authorDisplay = 'Unknown User';
+        // *** Look up the creator's name from the map ***
+        let authorDisplay = 'Unknown User'; // Default fallback
         if (note.created_by)
         {
-            // Show first part of UUID for brevity, or the full ID
-            authorDisplay = `User ID: ${note.created_by.substring(0, 8)}...`;
-            // authorDisplay = note.created_by; // Uncomment to show full UUID
+            // Use name from map, or fallback to shortened UUID if profile wasn't found or fetched
+            authorDisplay = userNamesMap.get(note.created_by) || `User (${note.created_by.substring(0, 6)}...)`;
         }
-        // You could enhance this later by fetching emails separately if required
+
 
         const isOwner = currentUserId && note.created_by === currentUserId;
         const deleteButtonHtml = isOwner
             ? `<button class="button" onclick="deleteNote(${note.id}, '${notePreviewSafe}')">Delete</button>`
             : `<button class="button" disabled title="You can only delete your own notes">Delete</button>`;
-        const editButtonHtml = isOwner
-            ? `<button class="button" onclick="editNote(${note.id})" disabled title="Edit not implemented yet">Edit</button>`
-            : `<button class="button" disabled title="You can only edit your own notes">Edit</button>`;
+        // Edit button remains disabled for now
+        const editButtonHtml = `<button class="button" onclick="editNote(${note.id})" disabled title="Edit not implemented yet">Edit</button>`;
+
 
         row.innerHTML = `
             <td class="tabledate">${formattedDate}</td>
             <td class="table-note" style="white-space: pre-wrap; word-break: break-word;">${note.note_content || ''}</td>
-            <td class="table-user">${authorDisplay}</td>
+            <td class="table-user">${authorDisplay}</td>  <!-- Display the fetched name -->
             <td class="table-actions">
                 ${editButtonHtml}
                 ${deleteButtonHtml}
@@ -518,9 +554,11 @@ async function displayNotes(notes)
         `;
         notesTableBody.appendChild(row);
     });
+    console.log("[displayNotes] Finished rendering notes table.");
 }
 
-// Function to Save a New Note
+
+// Function to Save a New Note (Ensure it calls the updated displayNotes)
 async function saveNewNote()
 {
     resetInactivityTimer();
@@ -539,14 +577,12 @@ async function saveNewNote()
         return;
     }
 
-    // Disable button and show status
     saveNoteButton.disabled = true;
     noteStatusSpan.textContent = 'Saving...';
     noteStatusSpan.style.color = 'orange';
 
     try
     {
-        // Get current user
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         if (userError || !user)
         {
@@ -556,7 +592,7 @@ async function saveNewNote()
         const newNote = {
             client_id: currentClientId,
             note_content: noteContent,
-            created_by: user.id // RLS policy should ensure this matches logged-in user
+            created_by: user.id // Correctly uses the logged-in user's ID
         };
 
         console.log('[saveNewNote] Attempting to insert:', JSON.stringify(newNote));
@@ -564,8 +600,8 @@ async function saveNewNote()
         const { data: insertedNote, error: insertError } = await supabase
             .from('Notes')
             .insert(newNote)
-            .select() // Optionally select the newly created note
-            .single(); // Expecting a single row back
+            .select()
+            .single();
 
         if (insertError)
         {
@@ -581,14 +617,12 @@ async function saveNewNote()
             newNoteTextarea.value = ''; // Clear the textarea
 
             console.log(`[saveNewNote] Refreshing notes for client ID: ${currentClientId}`);
+            // *** Refresh notes list AFTER saving ***
             const updatedNotes = await fetchNotesForClient(currentClientId);
-            await displayNotes(updatedNotes); // await displayNotes as it's now async
+            await displayNotes(updatedNotes); // Refresh the display (now async)
 
             // Clear status message after a few seconds
-            setTimeout(() =>
-            {
-                noteStatusSpan.textContent = '';
-            }, 3000);
+            setTimeout(() => { noteStatusSpan.textContent = ''; }, 3000);
         }
 
     } catch (err)
@@ -599,13 +633,12 @@ async function saveNewNote()
         noteStatusSpan.style.color = 'red';
     } finally
     {
-        // Re-enable button
         saveNoteButton.disabled = false;
     }
 }
 
 
-// Function to Delete a Note
+// Function to Delete a Note (Ensure it calls the updated displayNotes)
 async function deleteNote(noteId, notePreview)
 {
     resetInactivityTimer();
@@ -615,7 +648,6 @@ async function deleteNote(noteId, notePreview)
 
     if (confirm(confirmMessage))
     {
-        // Find the specific delete button for this note to disable it
         const buttonSelector = `button[onclick^="deleteNote(${noteId},"]`;
         const deleteButton = notesTableBody.querySelector(buttonSelector);
         if (deleteButton)
@@ -629,15 +661,14 @@ async function deleteNote(noteId, notePreview)
             const { error } = await supabase
                 .from('Notes')
                 .delete()
-                .eq('id', noteId);
-            // RLS policy should enforce ownership check (auth.uid() = created_by)
+                .eq('id', noteId); // RLS policy ensures ownership
 
             if (error)
             {
                 console.error('Error deleting note:', error);
                 alert(`Failed to delete note: ${error.message}`);
                 if (deleteButton)
-                { // Re-enable button on error
+                {
                     deleteButton.disabled = false;
                     deleteButton.textContent = 'Delete';
                 }
@@ -645,17 +676,17 @@ async function deleteNote(noteId, notePreview)
             {
                 console.log(`Note ID: ${noteId} deleted successfully.`);
                 alert(`Note "${notePreview}" deleted successfully.`);
-                // Refresh the notes list efficiently
-                console.log(`[deleteNote] Refreshing notes for client ID: ${currentClientId} after deletion.`); // Added log
+                // *** Refresh notes list AFTER deleting ***
+                console.log(`[deleteNote] Refreshing notes for client ID: ${currentClientId} after deletion.`);
                 const updatedNotes = await fetchNotesForClient(currentClientId);
-                await displayNotes(updatedNotes); // await displayNotes as it's now async
+                await displayNotes(updatedNotes); // Refresh the display (now async)
             }
         } catch (err)
         {
             console.error('An unexpected error occurred during note deletion:', err);
             alert('An unexpected error occurred during deletion. Check console.');
             if (deleteButton)
-            { // Re-enable button on error
+            {
                 deleteButton.disabled = false;
                 deleteButton.textContent = 'Delete';
             }
@@ -674,16 +705,10 @@ function editNote(noteId)
     resetInactivityTimer();
     console.log(`Edit Note button clicked for note ID: ${noteId} - Placeholder`);
     alert(`Editing note ID ${noteId} is not yet implemented.`);
-    // Future implementation:
-    // 1. Fetch the specific note's content.
-    // 2. Populate the `newNoteTextarea` (or a modal).
-    // 3. Change the "Save Note" button to "Update Note", storing `noteId`.
-    // 4. Create an `updateNote(noteId)` async function to call supabase.update().
-    // 5. Refresh list on success.
 }
 
 
-// --- 9. Authentication Check & Initial Load ---
+// --- 9. Authentication Check & Initial Load (Ensure it calls the updated displayNotes) ---
 async function checkAuthAndLoadClientView()
 {
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -704,17 +729,16 @@ async function checkAuthAndLoadClientView()
     currentMode = getModeFromUrl();
     console.log("Current Mode:", currentMode);
 
-    // Clear potential leftover notes status
-    if (noteStatusSpan) noteStatusSpan.textContent = '';
+    if (noteStatusSpan) noteStatusSpan.textContent = ''; // Clear status
 
     if (currentMode === 'add')
     {
         pageTitle.textContent = "Add New Client";
         clientForm.reset();
         submitButton.textContent = 'Save New Client';
-        clientForm.style.display = '';
-        if (notesSectionDiv) notesSectionDiv.style.display = 'none'; // Hide notes section in add mode
-        currentClientId = null; // Ensure no client ID is set
+        clientForm.style.display = ''; // Show form
+        if (notesSectionDiv) notesSectionDiv.style.display = 'none'; // Hide notes section
+        currentClientId = null; // No client ID yet
 
     } else
     { // 'edit' mode
@@ -723,7 +747,7 @@ async function checkAuthAndLoadClientView()
 
         if (clientIdFromUrl)
         {
-            const parsedClientId = parseInt(clientIdFromUrl); // Store client ID globally for notes
+            const parsedClientId = parseInt(clientIdFromUrl);
             if (isNaN(parsedClientId))
             {
                 console.error("Invalid Client ID in URL:", clientIdFromUrl);
@@ -736,23 +760,24 @@ async function checkAuthAndLoadClientView()
             }
             currentClientId = parsedClientId; // Assign valid ID
 
-            const clientData = await fetchClientData(currentClientId); // Use stored ID
+            const clientData = await fetchClientData(currentClientId);
             if (clientData)
             {
-                populateForm(clientData); // Populates the main client form
-                clientForm.style.display = ''; // Ensure form is visible
-                if (notesSectionDiv) notesSectionDiv.style.display = ''; // Show notes section in edit mode
+                populateForm(clientData); // Populate the main client form
+                clientForm.style.display = ''; // Show form
+                if (notesSectionDiv) notesSectionDiv.style.display = ''; // Show notes section
 
                 // Fetch and display notes AFTER client data is loaded
                 const notes = await fetchNotesForClient(currentClientId);
-                await displayNotes(notes); // await displayNotes as it's now async
+                // *** Call the updated async displayNotes function ***
+                await displayNotes(notes);
 
             } else
             {
-                // fetchClientData already handled alerts/errors and hid form
+                // fetchClientData handled errors and hid form
                 console.log("Client data could not be fetched or found for edit.");
-                if (notesSectionDiv) notesSectionDiv.style.display = 'none'; // Hide notes if client failed to load
-                currentClientId = null; // Reset client ID
+                if (notesSectionDiv) notesSectionDiv.style.display = 'none';
+                currentClientId = null;
             }
         } else
         {
@@ -760,7 +785,7 @@ async function checkAuthAndLoadClientView()
             alert("No client ID specified in the URL for editing.");
             clientForm.style.display = 'none';
             if (notesSectionDiv) notesSectionDiv.style.display = 'none';
-            currentClientId = null; // Reset client ID
+            currentClientId = null;
         }
     }
 }
@@ -772,5 +797,5 @@ document.addEventListener('DOMContentLoaded', checkAuthAndLoadClientView);
 // --- Optional: Cleanup on Page Unload ---
 window.addEventListener('beforeunload', () =>
 {
-    stopInactivityDetection(); // More reliable than just clearing timer
+    stopInactivityDetection();
 });

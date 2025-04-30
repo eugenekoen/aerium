@@ -1,16 +1,14 @@
-// js/clientview.js
-
 // --- 1. Import Shared Functionality ---
 import
-    {
-        supabase,
-        checkAuthAndRedirect,
-        // handleLogout, // Likely handled by sidebar now
-        setupInactivityDetection,
-        // stopInactivityDetection, // Likely handled by shared.js unload
-        loadSidebar,
-        resetInactivityTimer
-    } from './shared.js';
+{
+    supabase,
+    checkAuthAndRedirect,
+    // handleLogout, // Likely handled by sidebar now
+    setupInactivityDetection,
+    // stopInactivityDetection, // Likely handled by shared.js unload
+    loadSidebar,
+    resetInactivityTimer
+} from './shared.js';
 
 // --- 2. DOM Element References ---
 const clientNameInput = document.getElementById('clientName');
@@ -43,9 +41,18 @@ const newNoteTextarea = document.getElementById('new-note-content');
 const saveNoteButton = document.getElementById('save-note-button');
 const noteStatusSpan = document.getElementById('note-status');
 
+// **** ADDED: Modal DOM References ****
+const editNoteModal = document.getElementById('edit-note-modal');
+const editNoteTextarea = document.getElementById('edit-note-textarea');
+const editingNoteIdInput = document.getElementById('editing-note-id');
+const saveEditedNoteButton = document.getElementById('save-edited-note-button');
+const editNoteStatusSpan = document.getElementById('edit-note-status');
+
+
 // --- 3. Global Variables ---
 let currentMode = 'edit';
 let currentClientId = null;
+let clientNotes = []; // **** ADDED: Store fetched notes ****
 
 // --- 4. Page Specific Functions ---
 
@@ -81,7 +88,6 @@ function setPageTitle(client)
         // **** UPDATED: Optionally include ClientCode in title ****
         const codePart = client.ClientCode ? ` (${client.ClientCode})` : '';
         pageTitleElement.textContent = `Client Information - ${client.ClientName}${codePart}`;
-        // Original: pageTitleElement.textContent = `Client Information - ${client.ClientName || 'Unnamed Client'}`;
     } else
     {
         pageTitleElement.textContent = "Client Information"; // Default
@@ -103,7 +109,6 @@ async function fetchClientData(clientId)
 
     try
     {
-        // Using select('*') implicitly includes the new ClientCode column
         const { data: client, error } = await supabase
             .from('Clients')
             .select('*')
@@ -228,7 +233,6 @@ async function handleFormSubmit(event)
         if (cancelButton) cancelButton.disabled = false;
         return;
     }
-    // Optional: Add validation for ClientCode format/length if needed here
 
     let operationSuccessful = false;
 
@@ -259,7 +263,6 @@ async function handleFormSubmit(event)
         if (error)
         {
             console.error(`Error ${currentMode === 'add' ? 'adding' : 'updating'} client:`, error);
-            // Check for unique constraint violation on ClientCode (example)
             if (error.code === '23505' && error.message.includes('ClientCode'))
             {
                 alert(`Error: Client Code "${clientDataPayload.ClientCode}" already exists. Please use a unique code.`);
@@ -275,11 +278,13 @@ async function handleFormSubmit(event)
 
             if (currentMode === 'add' && data?.Id)
             {
+                // Navigate to the edit view of the newly created client
                 window.location.href = `ClientView.html?clientId=${data.Id}`;
-                return;
+                return; // Prevent button reset below
             } else if (currentMode === 'edit' && data)
             {
                 setPageTitle(data); // Update title with potentially new name/code
+                populateForm(data); // Re-populate form in case DB triggers changed something
             }
         }
     } catch (err)
@@ -288,6 +293,8 @@ async function handleFormSubmit(event)
         alert(`An unexpected error occurred. Please check console.`);
     } finally
     {
+        // Re-enable buttons only if the operation failed or it was an edit
+        // For successful 'add', we navigate away, so no need to re-enable.
         if (!operationSuccessful || currentMode === 'edit')
         {
             if (submitButton)
@@ -310,14 +317,15 @@ function handleCancelClick()
     }
 }
 
-// --- Notes Section Functions (fetchNotesForClient, displayNotes, loadAndDisplayNotes, saveNewNoteHandler, deleteNoteHandler, editNoteHandler) ---
-// --- No changes needed in these note functions for ClientCode ---
+// --- Notes Section Functions ---
+
 // Fetch notes for the current client
 async function fetchNotesForClient()
 {
     if (!currentClientId)
     {
         console.error("Cannot fetch notes: Client ID is missing.");
+        clientNotes = []; // Clear local cache
         return { notes: [], userMap: new Map() }; // Return empty data
     }
     console.log(`[fetchNotesForClient] Fetching notes for client ID: ${currentClientId}`);
@@ -335,13 +343,18 @@ async function fetchNotesForClient()
         if (notesError)
         {
             console.error('[fetchNotesForClient] Fetch ERROR:', notesError);
+            clientNotes = []; // Clear notes on error
             throw notesError; // Rethrow to be caught below
         }
+
         if (!notes)
         {
+            clientNotes = []; // Clear notes if none found
             return { notes: [], userMap: new Map() }; // No notes found
         }
 
+        // Store notes globally
+        clientNotes = notes;
 
         // Get unique creator IDs
         const creatorIds = [...new Set(notes.map(note => note.created_by).filter(id => id))];
@@ -374,6 +387,7 @@ async function fetchNotesForClient()
     {
         console.error('[fetchNotesForClient] Error processing notes:', err);
         if (notesTableBody) notesTableBody.innerHTML = `<tr><td colspan="4" style="color: red; text-align: center;">Error loading notes: ${err.message}</td></tr>`;
+        clientNotes = []; // Clear notes on error
         return { notes: [], userMap: new Map() }; // Return empty on error
     }
 }
@@ -390,16 +404,15 @@ async function displayNotes(notes, userMap)
         return;
     }
 
-    // Get current user ID for ownership check
     const { data: { user } } = await supabase.auth.getUser();
     const currentUserId = user?.id;
 
     notes.forEach(note =>
     {
         const row = document.createElement('tr');
-        const noteContentSafe = note.note_content ? note.note_content.replace(/'/g, "\\'") : '';
+        // Escaping note content for preview only
         const notePreview = (note.note_content || '').substring(0, 30) + (note.note_content && note.note_content.length > 30 ? '...' : '');
-        const notePreviewSafe = notePreview.replace(/'/g, "\\'");
+        const notePreviewSafe = notePreview.replace(/'/g, "\\'"); // Escape for use in JS string within HTML
 
         const createdAtDate = note.created_at ? new Date(note.created_at) : null;
         const formattedDate = createdAtDate
@@ -413,10 +426,15 @@ async function displayNotes(notes, userMap)
         }
 
         const isOwner = currentUserId && note.created_by === currentUserId;
+
+        // Enable Edit button (if owner) and change onclick
+        const editButtonHtml = isOwner
+            ? `<button class="button" onclick="openEditNoteModal(${note.id})">Edit</button>`
+            : `<button class="button" disabled title="You can only edit your own notes">Edit</button>`;
+
         const deleteButtonHtml = isOwner
-            ? `<button class="button" onclick="deleteNoteHandler(${note.id}, '${notePreviewSafe}')">Delete</button>` // Changed onclick function name
+            ? `<button class="button" onclick="deleteNoteHandler(${note.id}, '${notePreviewSafe}')">Delete</button>`
             : `<button class="button" disabled title="You can only delete your own notes">Delete</button>`;
-        const editButtonHtml = `<button class="button" onclick="editNoteHandler(${note.id})" disabled title="Edit not implemented yet">Edit</button>`; // Changed onclick function name
 
         row.innerHTML = `
             <td class="tabledate">${formattedDate}</td>
@@ -437,7 +455,7 @@ async function loadAndDisplayNotes()
 {
     if (currentMode === 'edit' && currentClientId)
     {
-        const { notes, userMap } = await fetchNotesForClient();
+        const { notes, userMap } = await fetchNotesForClient(); // This now updates clientNotes array
         await displayNotes(notes, userMap);
     }
 }
@@ -445,7 +463,7 @@ async function loadAndDisplayNotes()
 
 // Save New Note Handler
 async function saveNewNoteHandler()
-{ // Renamed function
+{
     resetInactivityTimer();
     const noteContent = newNoteTextarea?.value?.trim();
 
@@ -508,7 +526,7 @@ if (saveNoteButton)
 
 // Delete Note Handler
 async function deleteNoteHandler(noteId, notePreview)
-{ // Renamed function
+{
     resetInactivityTimer();
     if (!currentClientId) return; // Should have client id if notes are visible
 
@@ -534,6 +552,11 @@ async function deleteNoteHandler(noteId, notePreview)
             {
                 console.error('Error deleting note:', error);
                 alert(`Failed to delete note: ${error.message}`);
+                if (deleteButton)
+                { // Re-enable button on failure
+                    deleteButton.disabled = false;
+                    deleteButton.textContent = 'Delete';
+                }
             } else
             {
                 console.log(`Note ID: ${noteId} deleted successfully.`);
@@ -544,22 +567,151 @@ async function deleteNoteHandler(noteId, notePreview)
         {
             console.error('An unexpected error occurred during note deletion:', err);
             alert('An unexpected error occurred during deletion.');
-        } finally
-        {
-            // Re-enable button is tricky as the element might be gone after refresh
-            // Generally okay as the list refreshes.
+            if (deleteButton)
+            { // Re-enable button on failure
+                deleteButton.disabled = false;
+                deleteButton.textContent = 'Delete';
+            }
         }
+        // No finally block needed to re-enable, handled on error or success removes it.
     }
 }
 window.deleteNoteHandler = deleteNoteHandler; // Make globally accessible for onclick
 
-// Edit Note Handler (Placeholder)
-function editNoteHandler(noteId)
-{ // Renamed function
+
+// Open Edit Note Modal
+function openEditNoteModal(noteId)
+{
     resetInactivityTimer();
-    alert(`Editing note ID ${noteId} is not yet implemented.`);
+    console.log(`[openEditNoteModal] Opening modal for note ID: ${noteId}`);
+
+    const noteToEdit = clientNotes.find(note => note.id === noteId);
+
+    if (!noteToEdit)
+    {
+        console.error(`[openEditNoteModal] Note with ID ${noteId} not found in local cache.`);
+        alert("Error: Could not find the note data to edit.");
+        return;
+    }
+
+    if (!editNoteModal || !editNoteTextarea || !editingNoteIdInput || !editNoteStatusSpan)
+    {
+        console.error("[openEditNoteModal] Modal elements not found.");
+        return;
+    }
+
+    // Populate the modal
+    editNoteTextarea.value = noteToEdit.note_content || '';
+    editingNoteIdInput.value = noteId; // Store the ID
+    editNoteStatusSpan.textContent = ''; // Clear any previous status
+
+    // Show the modal
+    editNoteModal.style.display = 'block';
 }
-window.editNoteHandler = editNoteHandler; // Make globally accessible for onclick
+window.openEditNoteModal = openEditNoteModal; // Make globally accessible for onclick
+
+// Close Edit Note Modal
+function closeEditNoteModal()
+{
+    if (!editNoteModal || !editNoteTextarea || !editingNoteIdInput || !editNoteStatusSpan) return;
+
+    editNoteModal.style.display = 'none';
+    editNoteTextarea.value = ''; // Clear content
+    editingNoteIdInput.value = ''; // Clear ID
+    editNoteStatusSpan.textContent = '';
+
+    // Re-enable button just in case it was disabled
+    if (saveEditedNoteButton)
+    {
+        saveEditedNoteButton.disabled = false;
+        saveEditedNoteButton.textContent = 'Save Changes';
+    }
+    // Find the cancel button specifically if needed
+    const modalCancelButton = editNoteModal.querySelector('.cancel-button');
+    if (modalCancelButton)
+    {
+        modalCancelButton.disabled = false;
+    }
+}
+window.closeEditNoteModal = closeEditNoteModal; // Make globally accessible for onclick (used by modal's own close button)
+
+// Save Edited Note Handler
+async function saveEditedNoteHandler()
+{
+    resetInactivityTimer();
+    if (!editNoteModal || !editNoteTextarea || !editingNoteIdInput || !saveEditedNoteButton || !editNoteStatusSpan)
+    {
+        console.error("[saveEditedNoteHandler] Modal elements not found.");
+        return;
+    }
+
+    const noteId = parseInt(editingNoteIdInput.value);
+    const updatedContent = editNoteTextarea.value.trim();
+
+    if (isNaN(noteId) || noteId <= 0)
+    {
+        alert("Error: Invalid Note ID detected.");
+        return;
+    }
+
+    if (!updatedContent)
+    {
+        alert("Note content cannot be empty.");
+        editNoteTextarea.focus();
+        return;
+    }
+
+    saveEditedNoteButton.disabled = true;
+    saveEditedNoteButton.textContent = 'Saving...';
+    editNoteStatusSpan.textContent = 'Saving...';
+    editNoteStatusSpan.style.color = 'orange';
+    // Disable cancel button too
+    const modalCancelButton = editNoteModal.querySelector('.cancel-button');
+    if (modalCancelButton) modalCancelButton.disabled = true;
+
+    try
+    {
+        // RLS Policy should enforce that the user can only update their own note.
+        const { error } = await supabase
+            .from('Notes')
+            .update({ note_content: updatedContent })
+            .eq('id', noteId);
+
+        if (error)
+        {
+            console.error('[saveEditedNoteHandler] Update ERROR:', error);
+            alert(`Failed to update note: ${error.message}`);
+            editNoteStatusSpan.textContent = 'Update failed.';
+            editNoteStatusSpan.style.color = 'red';
+            // Re-enable buttons on failure
+            saveEditedNoteButton.disabled = false;
+            saveEditedNoteButton.textContent = 'Save Changes';
+            if (modalCancelButton) modalCancelButton.disabled = false;
+
+        } else
+        {
+            console.log(`[saveEditedNoteHandler] Note ID: ${noteId} updated successfully.`);
+            editNoteStatusSpan.textContent = 'Note updated!';
+            editNoteStatusSpan.style.color = 'green';
+            // Keep status for a moment, then close and refresh
+            setTimeout(async () =>
+            {
+                closeEditNoteModal();
+                await loadAndDisplayNotes(); // Refresh the notes list
+            }, 1500); // Close after 1.5 seconds
+        }
+    } catch (err)
+    {
+        console.error('[saveEditedNoteHandler] Unexpected error:', err);
+        alert('An unexpected error occurred while updating the note.');
+        editNoteStatusSpan.textContent = 'Error.';
+        editNoteStatusSpan.style.color = 'red';
+        // Re-enable buttons on unexpected error
+        saveEditedNoteButton.disabled = false;
+        saveEditedNoteButton.textContent = 'Save Changes';
+        if (modalCancelButton) modalCancelButton.disabled = false;
+    }
+}
 // --- END OF NOTES SECTION FUNCTIONS ---
 
 
@@ -588,7 +740,7 @@ async function initializePage()
         setPageTitle("Add New Client");
         if (clientForm) clientForm.reset();
         if (submitButton) submitButton.textContent = 'Save New Client';
-        if (clientForm) clientForm.style.display = '';
+        if (clientForm) clientForm.style.display = 'grid'; // Use grid display
         if (notesSectionDiv) notesSectionDiv.style.display = 'none';
     } else
     { // 'edit' mode
@@ -597,21 +749,43 @@ async function initializePage()
         if (clientData)
         {
             populateForm(clientData);
-            if (clientForm) clientForm.style.display = '';
-            if (notesSectionDiv) notesSectionDiv.style.display = '';
-            await loadAndDisplayNotes(); // Load notes
+            if (clientForm) clientForm.style.display = 'grid'; // Use grid display
+            if (notesSectionDiv) notesSectionDiv.style.display = ''; // Show notes section
+            await loadAndDisplayNotes(); // Load notes for existing client
         } else
         {
-            // Error handled in fetchClientData
+            // Error handled in fetchClientData, prevent form/notes from showing
             if (clientForm) clientForm.style.display = 'none';
             if (notesSectionDiv) notesSectionDiv.style.display = 'none';
-            return;
+            return; // Stop further initialization if client load failed
         }
     }
 
     // 5. Attach Form Handlers
     if (clientForm) clientForm.addEventListener('submit', handleFormSubmit);
     if (cancelButton) cancelButton.addEventListener('click', handleCancelClick);
+
+    // Attach Modal Save Button Handler
+    if (saveEditedNoteButton)
+    {
+        saveEditedNoteButton.addEventListener('click', saveEditedNoteHandler);
+    } else
+    {
+        console.error("Save Edited Note button (#save-edited-note-button) not found during initialization.");
+    }
+
+    // Close modal if user clicks outside of it
+    if (editNoteModal)
+    {
+        window.addEventListener('click', (event) =>
+        {
+            if (event.target == editNoteModal)
+            { // Check if the click is directly on the modal overlay
+                closeEditNoteModal();
+            }
+        });
+    }
+
 
     // 6. Start Inactivity Detection
     setupInactivityDetection();

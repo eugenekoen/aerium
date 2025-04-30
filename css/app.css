@@ -608,6 +608,116 @@ body.login-body {
     margin-top: 10px;
 }
 
+.modal {
+    display: none;
+    /* Hidden by default */
+    position: fixed;
+    /* Stay in place */
+    z-index: 1000;
+    /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%;
+    /* Full width */
+    height: 100%;
+    /* Full height */
+    overflow: auto;
+    /* Enable scroll if needed */
+    background-color: rgba(0, 0, 0, 0.5);
+    /* Black w/ opacity (overlay) */
+    font-family: "Roboto", sans-serif;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    /* 10% from the top and centered */
+    padding: 30px;
+    border: 1px solid #888;
+    width: 80%;
+    /* Could be more or less, depending on screen size */
+    max-width: 600px;
+    /* Maximum width */
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+    /* For positioning the close button */
+}
+
+.modal-close-button {
+    color: #aaa;
+    position: absolute;
+    /* Position relative to modal-content */
+    top: 10px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.modal-close-button:hover,
+.modal-close-button:focus {
+    color: black;
+    text-decoration: none;
+}
+
+.modal h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #333;
+    font-weight: 500;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+#edit-note-textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    /* Include padding and border in the element's total width and height */
+    font-size: 14px;
+    resize: vertical;
+    /* Allow vertical resizing */
+    min-height: 100px;
+}
+
+.modal-buttons {
+    text-align: right;
+    /* Align buttons to the right */
+    margin-top: 20px;
+}
+
+.modal-buttons .button {
+    margin-left: 10px;
+    /* Space between buttons */
+}
+
+.modal-buttons .cancel-button {
+    background-color: #6c757d;
+    /* Grey for cancel */
+}
+
+.modal-buttons .cancel-button:hover {
+    background-color: #5a6268;
+}
+
+#edit-note-status {
+    margin-right: 15px;
+    /* Space it from the buttons */
+    font-size: 14px;
+    font-style: italic;
+    color: #555;
+    /* Ensure it stays on the same line */
+    display: inline-block;
+    /* Or float left if text-align: right is removed from parent */
+    line-height: 34px;
+    /* Approx height of button for vertical align */
+}
+
+
 
 /* CLIENT VIEW */
 

@@ -4,33 +4,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="app.css">
+    <!-- Updated CSS Path -->
+    <link rel="stylesheet" href="css/app.css">
+    <!-- Updated Favicon Path -->
     <link rel="shortcut icon" href="assets/app_icon.png" />
     <title>Aerium - All Clients</title>
-    <!-- Include the Supabase JS library via CDN -->
+    <!-- Include the Supabase JS library via CDN (Keep this here) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
-    <!-- NAVIGATION BAR ON THE LEFT -->
-    <div class="sidenav">
-        <!-- Link to index.html for static hosting -->
-        <a class="sidenav-profile" href="index.html">Home</a>
-        <!-- Make this link active or styled differently if desired -->
-        <a href="AllClients.html">Clients</a>
-
-        <div class="sidenav-bottom">
-            <a href="#" onclick="handleLogout(); return false;">Logout</a>
-        </div>
+    <!-- Sidebar Placeholder (JS will load content here) -->
+    <div id="sidebar-placeholder">
+        <!-- Optional: Add a loading indicator -->
+        <div
+            style="width: 200px; height: 100vh; background-color: #111; color: #818181; display: flex; align-items: center; justify-content: center; position: fixed; top: 0; left: 0;">
+            Loading Nav...</div>
     </div>
-    <!-- NAVIGATION BAR ON THE LEFT -->
 
+    <!-- Main Content Area -->
     <div class="body">
 
         <div class="pagination-controls">
-            <button id="prev-page" disabled>Previous</button>
+            <button class="button" id="prev-page" disabled>Previous</button>
             <span id="page-info">Page 1</span>
-            <button id="next-page">Next</button>
+            <button class="button" id="next-page" disabled>Next</button> <!-- Start disabled until count is known -->
             <select id="page-size">
                 <option value="10">10 per page</option>
                 <option value="25">25 per page</option>
@@ -39,6 +37,7 @@
         </div>
 
         <div class="top-buttons-list-view">
+            <!-- Ensure the function name matches the one exposed in JS -->
             <button class="button" onclick="navigateToAddClient()">Add Client</button>
         </div>
         <table class="client-list-view-table">
@@ -56,20 +55,17 @@
                     <th>Actions</th>
                 </tr>
             </thead>
-            <!-- Add an ID to the tbody for easy selection in JS -->
-            <!-- Remove the static row, JS will populate this -->
             <tbody id="client-table-body">
-                <!-- Data will be loaded here by JavaScript -->
+                <!-- Initial loading message (JS will replace) -->
                 <tr>
-                    <td colspan="10" style="text-align: center;">Loading clients...</td>
+                    <td colspan="10" style="text-align: center;">Initializing...</td>
                 </tr>
             </tbody>
         </table>
     </div>
 
-    <!-- Link your custom JavaScript file for this page -->
-    <!-- Place scripts at the end of body for better performance -->
-    <script src="allclients.js"></script>
+    <!-- Updated JS Path & Added type="module" -->
+    <script type="module" src="js/allclients.js" defer></script>
 
 </body>
 

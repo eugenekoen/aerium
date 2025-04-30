@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="app.css">
+    <!-- Updated CSS Path -->
+    <link rel="stylesheet" href="css/app.css">
+    <!-- Updated Favicon Path -->
     <link rel="shortcut icon" href="assets/app_icon.png" />
     <title>Client View</title>
     <!-- Include the Supabase JS library via CDN -->
@@ -12,183 +14,175 @@
 </head>
 
 <body>
-    <!-- NAVIGATION BAR ON THE LEFT -->
-    <div class="sidenav">
-        <!-- Link to index.html for static hosting -->
-        <a class="sidenav-profile" href="index.html">Home</a>
-        <!-- Make this link active or styled differently if desired -->
-        <a href="AllClients.html">Clients</a>
-
-        <div class="sidenav-bottom">
-            <a href="#" onclick="handleLogout(); return false;">Logout</a>
-        </div>
+    <!-- Sidebar Placeholder -->
+    <div id="sidebar-placeholder">
+        <div
+            style="width: 200px; height: 100vh; background-color: #111; color: #818181; display: flex; align-items: center; justify-content: center; position: fixed; top: 0; left: 0;">
+            Loading Nav...</div>
     </div>
-    <!-- NAVIGATION BAR ON THE LEFT -->
 
+    <!-- Main Content Area -->
     <div class="body-container">
         <div class="client-view-container">
             <div class="client-view-top-section">
-                <!-- Placeholder for dynamic title -->
-                <h2>Client Information - [Client Name/ID Here]</h2>
+                <h2>Client Information - Loading...</h2>
 
-                <form id="client-form">
-                    <!-- Existing form rows (Client Name, Contact Name, etc.) remain unchanged -->
-                    <div class="row">
-                        <div class="column">
-                            <div class="form-group">
-                                <label class="label-class" for="clientName">Client Name:</label>
-                                <input type="text" id="clientName" class="input-client-view" required />
-                            </div>
-                            <div class="form-group">
-                                <label class="label-class" for="contactName">Contact Name:</label>
-                                <input type="text" id="contactName" class="input-client-view" required />
-                            </div>
-                            <div class="form-group">
-                                <label class="label-class" for="emailAddress">Email Address:</label>
-                                <input type="email" id="emailAddress" class="input-client-view" required />
-                            </div>
-                            <div class="form-group">
-                                <label class="label-class-textarea" for="address">Address:</label>
-                                <textarea id="address" class="form-control" rows="5"></textarea>
-                            </div>
-                            <div class="form-group column-short">
-                                <label class="label-class" for="billingCode">Billing Code:</label>
-                                <input maxlength="8" type="text" class="input-client-view" id="billingCode" />
-                            </div>
+                <!-- Use the grid class for better layout -->
+                <form id="client-form" class="client-form-grid">
+                    <!-- Column 1 -->
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label class="label-class" for="clientName">Client Name:</label>
+                            <input type="text" id="clientName" class="input-client-view" required />
                         </div>
-                        <div class="column">
-                            <div class="form-group">
-                                <label class="label-class" for="clientType">Client Type:</label>
-                                <select id="clientType" class="form-control select-class" required>
-                                    <option value="" selected>-- Select Type --</option>
-                                    <option value="1">Private Company (Pty) Ltd</option>
-                                    <option value="2">Close Corporation (CC)</option>
-                                    <option value="3">Non-Profit Organisation (NPO)</option>
-                                    <option value="4">Not for Profit Company (NPC)</option>
-                                    <option value="5">Trust</option>
-                                    <option value="6">Partnership</option>
-                                    <option value="7">Sole Proprietor</option>
-                                    <option value="8">Personal Tax</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="label-class" for="ckidNumber">CK / ID Number:</label>
-                                <input type="text" id="ckidNumber" class="input-client-view" />
-                            </div>
-                            <div class="form-group">
-                                <label class="label-class" for="vatNumber">VAT Number:</label>
-                                <input type="text" id="vatNumber" class="input-client-view" />
-                            </div>
-                            <div class="form-group">
-                                <label class="label-class" for="payeNumber">PAYE Number:</label>
-                                <input type="text" id="payeNumber" class="input-client-view" />
-                            </div>
-                            <div class="form-group">
-                                <label class="label-class" for="uifNumber">UIF Number:</label>
-                                <input type="text" id="uifNumber" class="input-client-view" />
-                            </div>
-                            <div class="form-group">
-                                <label class="label-class" for="sdlNumber">SDL Number:</label>
-                                <input type="text" id="sdlNumber" class="input-client-view" />
-                            </div>
+                        <div class="form-group">
+                            <label class="label-class" for="contactName">Contact Name:</label>
+                            <input type="text" id="contactName" class="input-client-view" />
+                            <!-- Removed required for flexibility -->
                         </div>
-                        <div class="column">
-                            <div class="form-group">
-                                <label class="label-class" for="taxNumber">Tax Number:</label>
-                                <input type="text" id="taxNumber" class="input-client-view" />
-                            </div>
-                            <div class="form-group">
-                                <label class="label-class" for="wcaNumber">WCA Number:</label>
-                                <input type="text" id="wcaNumber" class="input-client-view" />
-                            </div>
-                            <div class="form-group">
-                                <label class="label-class" for="telNumber">Tel Number:</label>
-                                <input type="text" id="telNumber" class="input-client-view" />
-                            </div>
-                            <div class="form-group">
-                                <label class="label-class" for="cellNumber">Cell Number:</label>
-                                <input type="text" id="cellNumber" class="input-client-view" />
-                            </div>
-                            <div class="form-group column-input">
-                                <label class="label-class" for="yearEnd">Year End:</label>
-                                <select id="yearEnd" class="form-control select-class">
-                                    <option value="" selected>-- Select --</option>
-                                    <option value="1">January</option>
-                                    <option value="2">February</option>
-                                    <option value="3">March</option>
-                                    <option value="4">April</option>
-                                    <option value="5">May</option>
-                                    <option value="6">June</option>
-                                    <option value="7">July</option>
-                                    <option value="8">August</option>
-                                    <option value="9">September</option>
-                                    <option value="10">October</option>
-                                    <option value="11">November</option>
-                                    <option value="12">December</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label class="label-class" for="clientStatusId">Client Status:</label>
-                                <select id="clientStatusId" class="form-control select-class">
-                                    <option value="" selected>-- Select --</option>
-                                    <option value="1">Client</option>
-                                    <option value="2">Not a Client</option>
-                                    <option value="3">On Hold</option>
-                                    <option value="4">Retainer</option>
-                                    <option value="5">Process of Deregistration</option>
-                                    <option value="6">Deceased</option>
-                                </select>
-                            </div>
+                        <div class="form-group">
+                            <label class="label-class" for="emailAddress">Email Address:</label>
+                            <input type="email" id="emailAddress" class="input-client-view" /> <!-- Removed required -->
+                        </div>
+                        <div class="form-group">
+                            <label class="label-class-textarea" for="address">Address:</label>
+                            <textarea id="address" rows="4"></textarea> <!-- Adjusted rows -->
+                        </div>
+                        <div class="form-group">
+                            <label class="label-class" for="billingCode">Billing Code:</label>
+                            <input maxlength="8" type="text" class="input-client-view" id="billingCode" />
                         </div>
                     </div>
-                    <!-- Buttons - remain unchanged -->
-                    <button class="button" type="submit">Update Client</button>
-                    <button class="button" type="button">Cancel</button>
+
+                    <!-- Column 2 -->
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label class="label-class" for="clientType">Client Type:</label>
+                            <select id="clientType" required> <!-- Keep required if essential -->
+                                <option value="" disabled selected>-- Select Type --</option> <!-- Use disabled -->
+                                <option value="1">Private Company (Pty) Ltd</option>
+                                <option value="2">Close Corporation (CC)</option>
+                                <option value="3">Non-Profit Organisation (NPO)</option>
+                                <option value="4">Not for Profit Company (NPC)</option>
+                                <option value="5">Trust</option>
+                                <option value="6">Partnership</option>
+                                <option value="7">Sole Proprietor</option>
+                                <option value="8">Personal Tax</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="label-class" for="ckidNumber">CK / ID Number:</label>
+                            <input type="text" id="ckidNumber" class="input-client-view" />
+                        </div>
+                        <div class="form-group">
+                            <label class="label-class" for="vatNumber">VAT Number:</label>
+                            <input type="text" id="vatNumber" class="input-client-view" />
+                        </div>
+                        <div class="form-group">
+                            <label class="label-class" for="payeNumber">PAYE Number:</label>
+                            <input type="text" id="payeNumber" class="input-client-view" />
+                        </div>
+                        <div class="form-group">
+                            <label class="label-class" for="uifNumber">UIF Number:</label>
+                            <input type="text" id="uifNumber" class="input-client-view" />
+                        </div>
+                        <div class="form-group">
+                            <label class="label-class" for="sdlNumber">SDL Number:</label>
+                            <input type="text" id="sdlNumber" class="input-client-view" />
+                        </div>
+                    </div>
+
+                    <!-- Column 3 -->
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label class="label-class" for="taxNumber">Tax Number:</label>
+                            <input type="text" id="taxNumber" class="input-client-view" />
+                        </div>
+                        <div class="form-group">
+                            <label class="label-class" for="wcaNumber">WCA Number:</label>
+                            <input type="text" id="wcaNumber" class="input-client-view" />
+                        </div>
+                        <div class="form-group">
+                            <label class="label-class" for="telNumber">Tel Number:</label>
+                            <input type="tel" id="telNumber" class="input-client-view" /> <!-- Use type=tel -->
+                        </div>
+                        <div class="form-group">
+                            <label class="label-class" for="cellNumber">Cell Number:</label>
+                            <input type="tel" id="cellNumber" class="input-client-view" /> <!-- Use type=tel -->
+                        </div>
+                        <div class="form-group">
+                            <label class="label-class" for="yearEnd">Year End:</label>
+                            <select id="yearEnd">
+                                <option value="" disabled selected>-- Select --</option>
+                                <option value="1">January</option>
+                                <option value="2">February</option>
+                                <option value="3">March</option>
+                                <option value="4">April</option>
+                                <option value="5">May</option>
+                                <option value="6">June</option>
+                                <option value="7">July</option>
+                                <option value="8">August</option>
+                                <option value="9">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="label-class" for="clientStatusId">Client Status:</label>
+                            <select id="clientStatusId">
+                                <option value="" disabled selected>-- Select --</option>
+                                <option value="1">Client</option>
+                                <option value="2">Not a Client</option>
+                                <option value="3">On Hold</option>
+                                <option value="4">Retainer</option>
+                                <option value="5">Process of Deregistration</option>
+                                <option value="6">Deceased</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Buttons spanning across grid columns -->
+                    <div class="form-buttons">
+                        <button class="button" type="submit">Update Client</button>
+                        <button class="button" type="button">Cancel</button>
+                    </div>
                 </form>
             </div>
 
-            <!-- **** START OF MODIFIED BOTTOM SECTION **** -->
-            <div class="client-view-bottom-section" id="notes-section" style="display: none;">
-                <!-- Hide by default, show in JS for edit mode -->
+            <!-- Notes Section -->
+            <div class="client-view-bottom-section" id="notes-section" style="display: none;"> <!-- Hide by default -->
                 <h2>NOTES</h2>
-
-                <!-- Add Note Form -->
-                <div class="add-note-form" style="margin: 20px;">
-                    <label for="new-note-content"
-                        style="display: block; margin-bottom: 5px; font-family: 'Roboto', sans-serif;">Add New
-                        Note:</label>
-                    <textarea id="new-note-content" rows="4"
-                        style="width: 90%; max-width: 700px; margin-bottom: 10px; font-size: 14px; font-family: 'Roboto', sans-serif;"></textarea>
-                    <button id="save-note-button" class="button" onclick="saveNewNote()">Save Note</button>
-                    <span id="note-status" style="margin-left: 10px; font-family: 'Roboto', sans-serif;"></span>
-                    <!-- For status messages -->
+                <div class="add-note-form">
+                    <label for="new-note-content">Add New Note:</label>
+                    <textarea id="new-note-content" rows="4"></textarea>
+                    <!-- The onclick is now attached in clientview.js -->
+                    <button id="save-note-button" class="button">Save Note</button>
+                    <span id="note-status"></span>
                 </div>
-                <!-- End Add Note Form -->
-
-                <!-- Notes Table -->
                 <table class="client-note-view-table">
                     <thead>
                         <tr>
-                            <th style="width: 150px;">Date Created</th> <!-- Adjust width as needed -->
+                            <th>Date Created</th>
                             <th>Note</th>
-                            <th style="width: 180px;">Created By</th> <!-- Adjust width -->
-                            <th style="width: 120px;">Actions</th> <!-- Adjust width -->
+                            <th>Created By</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="notes-table-body">
-                        <!-- Notes will be loaded here by JavaScript -->
                         <tr>
                             <td colspan="4" style="text-align: center;">Loading notes...</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-            <!-- **** END OF MODIFIED BOTTOM SECTION **** -->
+            <!-- End Notes Section -->
 
         </div>
     </div>
 
-    <script src="clientview.js" defer></script>
+    <!-- Updated JS Path & Added type="module" -->
+    <script type="module" src="js/clientview.js" defer></script>
 
 </body>
 

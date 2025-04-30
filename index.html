@@ -4,30 +4,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Updated Favicon Path -->
     <link rel="shortcut icon" href="assets/app_icon.png" />
-    <link rel="stylesheet" href="app.css">
-    <title>Aerium!</title>
+    <!-- Updated CSS Path -->
+    <link rel="stylesheet" href="css/app.css">
+    <title>Aerium - Home</title>
+    <!-- Include the Supabase JS library via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
-    <!-- NAVIGATION BAR ON THE LEFT -->
-    <div class="sidenav">
-        <a class="sidenav-profile" href="index.html">Home</a>
-        <a href="AllClients.html">Clients</a>
-        <div class="sidenav-bottom">
-            <a href="#" onclick="handleLogout(); return false;">Logout</a>
-        </div>
+    <!-- Sidebar Placeholder -->
+    <div id="sidebar-placeholder">
+        <div
+            style="width: 200px; height: 100vh; background-color: #111; color: #818181; display: flex; align-items: center; justify-content: center; position: fixed; top: 0; left: 0;">
+            Loading Nav...</div>
     </div>
-    <!-- NAVIGATION BAR ON THE LEFT -->
 
+    <!-- Main Content Area -->
     <div class="body">
-
+        <h1 id="user-welcome-message">Loading user info...</h1>
+        <!-- Add more home page content here -->
+        <p>This is the main dashboard area.</p>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Updated JS Path & Added type="module" -->
+    <script type="module" src="js/index.js" defer></script>
 
 </body>
-
-
 
 </html>

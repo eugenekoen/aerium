@@ -1,0 +1,719 @@
+/* css/app.css */
+
+/* ... (keep all your existing styles) ... */
+
+
+/* GLOBAL*/
+
+.button {
+    padding: 8px 15px;
+    background-color: #1c90c9;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    /* Smooth transition */
+}
+
+.button:hover:not([disabled]) {
+    background-color: #527a7a;
+}
+
+.button[disabled] {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    opacity: 0.7;
+    /* Indicate disabled state visually */
+}
+
+a {
+    text-decoration: none;
+    color: white;
+}
+
+
+/* GLOBAL */
+
+
+
+/* NAVBAR  */
+
+.sidenav {
+    height: 100%;
+    width: 200px;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: #111;
+    overflow-x: hidden;
+    display: flex;
+    /* Use flexbox for vertical alignment */
+    flex-direction: column;
+    /* Stack items vertically */
+}
+
+/* Remove fixed bottom positioning, let flexbox handle it */
+.sidenav-bottom {
+    /* width: inherit; */
+    /* position: absolute; */
+    /* bottom: 10px; */
+    margin-top: auto;
+    /* Push to the bottom */
+    padding-bottom: 10px;
+    /* Add some space at the very bottom */
+}
+
+
+.sidenav-profile {
+    /* height: 100px; */
+    /* Adjust as needed or remove */
+    /* align-content: center; */
+    /* Not needed with flex */
+    padding-top: 20px;
+    /* Example padding */
+    padding-bottom: 20px;
+    /* Example padding */
+}
+
+.sidenav a {
+    padding: 10px 15px 10px 32px;
+    /* Adjusted padding */
+    text-decoration: none;
+    font-size: 20px;
+    /* Slightly smaller */
+    color: #818181;
+    display: block;
+    font-family: "Roboto", sans-serif;
+    font-weight: 400;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    /* Smooth transitions */
+}
+
+.sidenav a:hover {
+    color: #f1f1f1;
+    background-color: #333;
+    /* Darker hover */
+}
+
+/* Style for the active link */
+.sidenav a.active {
+    background-color: #1c90c9;
+    /* Highlight color */
+    color: white;
+    font-weight: 500;
+    /* Make active link slightly bolder */
+}
+
+
+/* NAVBAR */
+
+/* BODY CLASS - MARGIN LEFT TO SHOW CONTENT */
+
+body {
+    margin: 0;
+    font-family: "Roboto", sans-serif;
+    /* Set default font */
+    background-color: #b0cbd163;
+    /* Light background for body */
+}
+
+
+.body,
+.body-container,
+.login-body {
+    /* Apply margin to all main content areas */
+    margin-left: 200px;
+    /* Keep space for the fixed sidenav */
+    padding: 20px;
+    /* Add some padding around content */
+    box-sizing: border-box;
+    /* Include padding in width calculation */
+}
+
+/* Login page doesn't need the margin */
+body.login-body {
+    margin-left: 0;
+    padding: 0;
+    /* Reset padding for login */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f0f0;
+    /* Keep specific login background */
+}
+
+
+/* BODY CLASS - MARGIN LEFT TO SHOW CONTENT */
+
+/* CLIENT LIST VIEW */
+
+.client-list-view-table {
+    border-collapse: collapse;
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
+    /* Slightly larger base font */
+    white-space: nowrap;
+    width: 100%;
+    /* Make table take available width */
+    background-color: transparent;
+    /* Table background */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    /* Subtle shadow */
+    border-radius: 4px;
+    /* Rounded corners */
+    overflow: hidden;
+    /* Ensure border-radius clips content */
+}
+
+.client-list-view-table th {
+    border: 0.5px solid rgba(0, 0, 0, 0.308);
+    /* Lighter borders */
+    padding: 10px 12px;
+    /* More padding */
+    font-size: 15px;
+    /* Slightly smaller header */
+    font-weight: 500;
+    /* Medium weight */
+    text-align: left;
+    /* Align text left */
+    background-color: #d2d6d7;
+    /* Light header background */
+    color: #333;
+    /* Darker text */
+}
+
+.client-list-view-table td {
+    border: 0.5px solid rgba(0, 0, 0, 0.308);
+    padding: 10px 12px;
+    vertical-align: middle;
+    /* Align vertically */
+}
+
+.client-list-view-table tbody tr:nth-child(even) {
+    background-color: #f8f9faa6;
+    /* Very light grey for even rows */
+}
+
+/* Style action buttons within the table */
+.client-list-view-table td .button {
+    padding: 5px 10px;
+    font-size: 13px;
+    margin-right: 5px;
+}
+
+.client-list-view-table td .button:last-child {
+    margin-right: 0;
+}
+
+
+.top-buttons-list-view {
+    /* margin: 20px; */
+    /* Handled by .body padding */
+    margin-bottom: 15px;
+    /* Space below buttons */
+}
+
+/* CLIENT LIST VIEW */
+
+/* CLIENT NOTE VIEW */
+
+.client-note-view-table {
+    /* margin: 20px; */
+    /* Handled by .body padding */
+    border-collapse: collapse;
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
+    /* white-space: nowrap; */
+    /* Allow notes to wrap */
+    width: 100%;
+    /* Full width */
+    background-color: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 20px;
+    /* Space above notes table */
+}
+
+.client-note-view-table th {
+    border: 1px solid #e0e0e0;
+    padding: 10px 12px;
+    font-size: 15px;
+    font-weight: 500;
+    text-align: left;
+    background-color: #f9f9f9;
+    color: #333;
+}
+
+.client-note-view-table td {
+    border: 1px solid #e0e0e0;
+    padding: 10px 12px;
+    vertical-align: top;
+    /* Align note content to top */
+}
+
+/* Specific column widths (adjust as needed) */
+.client-note-view-table th:nth-child(1),
+/* Date */
+.client-note-view-table td:nth-child(1) {
+    width: 160px;
+    white-space: nowrap;
+}
+
+.client-note-view-table th:nth-child(3),
+/* Created By */
+.client-note-view-table td:nth-child(3) {
+    width: 180px;
+    white-space: nowrap;
+}
+
+.client-note-view-table th:nth-child(4),
+/* Actions */
+.client-note-view-table td:nth-child(4) {
+    width: 150px;
+    /* Wider for potential edit/delete */
+    white-space: nowrap;
+    text-align: center;
+    /* Center action buttons */
+}
+
+
+.client-note-view-table .table-note {
+    /* width: 725px; */
+    /* Let it take remaining space */
+    white-space: pre-wrap;
+    /* Respect whitespace and wrap */
+    word-break: break-word;
+    /* Break long words */
+}
+
+/* Style action buttons in notes */
+.client-note-view-table .button {
+    padding: 5px 10px;
+    font-size: 13px;
+    margin: 0 3px;
+    /* Space between buttons */
+}
+
+
+/* CLIENT NOTE VIEW */
+
+/* LOGIN PAGE */
+
+/* body.login-body styles moved to .body section for consolidation */
+
+.login-container {
+    background-color: white;
+    padding: 40px;
+    /* More padding */
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    /* Softer shadow */
+    width: 100%;
+    max-width: 400px;
+    /* Limit width */
+    text-align: center;
+    /* Center image */
+}
+
+.login-container img {
+    margin-bottom: 25px;
+    width: 150px;
+    /* Adjust size */
+    height: auto;
+}
+
+.login-container h1 {
+    /* Optional: Add a title */
+    text-align: center;
+    margin-bottom: 25px;
+    font-weight: 500;
+    color: #333;
+}
+
+.login-container form div {
+    margin-bottom: 18px;
+    text-align: left;
+    /* Align labels left */
+}
+
+.login-container label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #555;
+}
+
+.login-container input[type="email"],
+.login-container input[type="password"] {
+    width: 100%;
+    padding: 12px;
+    /* More padding */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 15px;
+}
+
+.login-container button[type="submit"] {
+    /* Be specific */
+    width: 100%;
+    padding: 12px;
+    background-color: #1c90c9;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    margin-top: 10px;
+    /* Space above button */
+    transition: background-color 0.2s ease;
+}
+
+.login-container button[type="submit"]:hover {
+    background-color: #527a7a;
+}
+
+#error-message {
+    color: #d9534f;
+    /* Softer red */
+    margin-top: 15px;
+    text-align: center;
+    font-weight: 500;
+    min-height: 1.2em;
+    /* Prevent layout shift */
+}
+
+/* LOGIN PAGE */
+
+/* PAGINATION */
+
+.pagination-controls {
+    /* margin: 20px; */
+    /* Handled by .body padding */
+    margin-bottom: 15px;
+    /* Space below controls */
+    font-family: "Roboto", sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    /* Allow wrapping on smaller screens */
+}
+
+.pagination-controls button {
+    /* Styles defined in global .button */
+}
+
+.pagination-controls select {
+    padding: 8px 10px;
+    /* Match button height */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: white;
+    /* Ensure background */
+    font-size: 14px;
+}
+
+#page-info {
+    font-weight: 500;
+    /* Medium weight */
+    min-width: 120px;
+    /* Ensure space */
+    text-align: center;
+    color: #555;
+    /* Dark grey text */
+}
+
+/* PAGINATION */
+
+/* CLIENT VIEW */
+
+.body-container {
+    /* margin-left: 200px; */
+    /* Defined in .body */
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 40px);
+    /* Full height minus body padding */
+}
+
+.client-view-container {
+    flex-grow: 1;
+}
+
+/* Common styling for top and bottom sections */
+.client-view-top-section,
+.client-view-bottom-section {
+    background-color: transparent;
+    padding: 20px;
+    margin-bottom: 20px;
+    /* Space between sections */
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.client-view-top-section h2,
+.client-view-bottom-section h2 {
+    /* margin-left: 15px; */
+    /* Handled by section padding */
+    margin-top: 0;
+    /* Remove default top margin */
+    margin-bottom: 20px;
+    font-family: "Roboto", sans-serif;
+    font-size: 20px;
+    font-weight: 500;
+    color: #333;
+    border-bottom: 2px solid #f5f5f5;
+    /* Separator line */
+    padding-bottom: 10px;
+}
+
+#client-form {
+    /* Form specific styles if needed */
+}
+
+/* Form layout using Grid for better alignment */
+.client-form-grid {
+    /* Add this class to the form or a wrapper div */
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    /* Responsive columns */
+    gap: 20px 30px;
+    /* Row and column gap */
+}
+
+.form-column {
+    /* Wrap each column's content in this */
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    /* Space between form groups */
+}
+
+
+.form-group {
+    display: flex;
+    align-items: center;
+    /* Align label and input */
+    flex-wrap: wrap;
+    /* Allow wrapping if needed */
+}
+
+.label-class,
+.label-class-textarea,
+.label-class-short {
+    width: 130px;
+    /* Standard label width */
+    display: inline-block;
+    /* padding: 10px; */
+    /* Remove padding, use alignment */
+    padding-right: 10px;
+    /* Space between label and input */
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #555;
+    flex-shrink: 0;
+    /* Prevent label from shrinking */
+}
+
+.label-class-textarea {
+    align-self: flex-start;
+    /* Align label to top for textarea */
+    padding-top: 10px;
+    /* Align with textarea padding */
+}
+
+
+/* Input and select common styles */
+.input-client-view,
+#client-form select,
+#client-form textarea {
+    flex-grow: 1;
+    /* Allow input to take remaining space */
+    padding: 9px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: "Roboto", sans-serif;
+    box-sizing: border-box;
+    min-width: 200px;
+    /* Minimum width */
+}
+
+#client-form textarea {
+    /* width: 202px; */
+    /* Remove fixed width */
+    /* margin-top: 10px; */
+    /* Handled by gap */
+    height: 100px;
+    /* Adjusted height */
+    resize: vertical;
+    /* Allow vertical resize */
+}
+
+#client-form select {
+    /* width: 208px; */
+    /* Remove fixed width */
+}
+
+/* Specific overrides if needed */
+/* Example: Make billing code slightly narrower if desired */
+#billingCode {
+    max-width: 150px;
+}
+
+
+/* Buttons at the bottom of the form */
+#client-form .form-buttons {
+    grid-column: 1 / -1;
+    /* Make button container span all columns */
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+#client-form .form-buttons .button {
+    margin-right: 10px;
+}
+
+
+/* Notes section specific styles */
+.add-note-form {
+    margin-bottom: 20px;
+    /* padding-bottom: 10px; */
+    border-bottom: 1px solid #eee;
+}
+
+.add-note-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: black;
+}
+
+#new-note-content {
+    width: 100%;
+    max-width: 800px;
+    /* Limit width */
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: "Roboto", sans-serif;
+    resize: vertical;
+    min-height: 80px;
+    /* Minimum height */
+}
+
+#note-status {
+    margin-left: 10px;
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
+    font-style: italic;
+}
+
+.add-note-form #save-note-button {
+    display: block;
+    margin-top: 10px;
+}
+
+
+/* CLIENT VIEW */
+
+/* Responsive Adjustments (Example) */
+@media (max-width: 768px) {
+    .sidenav {
+        width: 100%;
+        height: auto;
+        position: relative;
+        /* Change from fixed */
+        display: flex;
+        justify-content: space-around;
+        /* Arrange items horizontally */
+        border-bottom: 2px solid #333;
+    }
+
+    .sidenav a {
+        padding: 15px 10px;
+        font-size: 16px;
+        text-align: center;
+    }
+
+    .sidenav-profile {
+        display: none;
+        /* Hide profile link on small screens maybe */
+    }
+
+    .sidenav-bottom {
+        margin-top: 0;
+        /* Reset margin */
+        padding-bottom: 0;
+    }
+
+    .body,
+    .body-container,
+    .login-body {
+        margin-left: 0;
+        /* Remove left margin */
+    }
+
+    .client-form-grid {
+        grid-template-columns: 1fr;
+        /* Stack columns */
+    }
+
+    .label-class,
+    .label-class-textarea,
+    .label-class-short {
+        width: 100%;
+        /* Full width label */
+        margin-bottom: 5px;
+        /* Space below label */
+    }
+
+    .input-client-view,
+    #client-form select,
+    #client-form textarea {
+        min-width: unset;
+        /* Remove min-width */
+        width: 100%;
+        /* Full width input */
+    }
+
+    .client-list-view-table,
+    .client-note-view-table {
+        font-size: 13px;
+        /* Smaller font on mobile */
+    }
+
+    .client-list-view-table th,
+    .client-list-view-table td,
+    .client-note-view-table th,
+    .client-note-view-table td {
+        padding: 8px 6px;
+        /* Less padding */
+        white-space: normal;
+        /* Allow wrapping */
+    }
+
+    /* Hide less critical columns on small screens if needed */
+    .client-list-view-table th:nth-child(5),
+    /* Tel */
+    .client-list-view-table td:nth-child(5),
+    .client-list-view-table th:nth-child(6),
+    /* Cell */
+    .client-list-view-table td:nth-child(6),
+    .client-list-view-table th:nth-child(9),
+    /* Billing Code */
+    .client-list-view-table td:nth-child(9) {
+        /* display: none; */
+        /* Example: Uncomment to hide */
+    }
+}

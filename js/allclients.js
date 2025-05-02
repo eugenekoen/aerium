@@ -1,5 +1,3 @@
-// js/allclients.js
-
 // --- 1. Import Shared Functionality ---
 import
 {
@@ -148,6 +146,9 @@ async function getClientCount()
     }
 }
 
+// ========================================================================
+// === XSS FIX APPLIED in loadClients below ===============================
+// ========================================================================
 // Function to Fetch and Display Clients with Pagination
 async function loadClients()
 {
@@ -183,7 +184,7 @@ async function loadClients()
             return;
         }
 
-        tableBody.innerHTML = '';
+        tableBody.innerHTML = ''; // Clear loading message
 
         if (clients && clients.length > 0)
         {
@@ -195,33 +196,88 @@ async function loadClients()
                     return; // Skip rendering this row
                 }
 
-                const row = document.createElement('tr');
-                const clientTypeName = client.ClientTypes?.Name ?? '';
-                const clientStatusName = client.ClientStatuses?.Name ?? '';
-                const yearEndName = client.YearEnds?.Name ?? '';
-                const clientNameSafe = client.ClientName ?? '';
-                // Escape name for use in data-attribute (though less critical than for JS string in onclick)
-                // Using encodeURIComponent is safer for data attributes if names can have quotes/special chars
-                const escapedClientName = encodeURIComponent(clientNameSafe);
+                const row = document.createElement('tr'); // Create the row element
 
-                // *** MODIFIED: Removed onclick, added data-* attributes and classes ***
-                row.innerHTML = `
-                    <td style="text-align: center">${client.ClientCode ?? ''}</td>
-                    <td>${clientNameSafe}</td>
-                    <td>${client.ContactName ?? ''}</td>
-                    <td>${clientTypeName}</td>
-                    <td>${client.EmailAddress ?? ''}</td>
-                    <td>${client.TelNumber ?? ''}</td>
-                    <td>${client.CellNumber ?? ''}</td>
-                    <td>${yearEndName}</td>
-                    <td>${clientStatusName}</td>
-                    <td>${client.BillingCode ?? ''}</td>
-                    <td>
-                        <button class="button edit-button" data-client-id="${client.Id}">Edit</button>
-                        <button class="button delete-button" data-client-id="${client.Id}" data-client-name="${escapedClientName}">Delete</button>
-                    </td>
-                `;
-                tableBody.appendChild(row);
+                // Safely get data, providing fallbacks
+                const clientTypeName = client.ClientTypes?.Name ?? 'N/A';
+                const clientStatusName = client.ClientStatuses?.Name ?? 'N/A';
+                const yearEndName = client.YearEnds?.Name ?? 'N/A';
+                const clientNameSafe = client.ClientName ?? '';
+                const escapedClientName = encodeURIComponent(clientNameSafe); // For data attribute
+
+                // *** START OF SECURE CELL CREATION ***
+
+                // Client Code Cell
+                const clientCodeCell = document.createElement('td');
+                clientCodeCell.style.textAlign = 'center'; // Apply style directly
+                clientCodeCell.textContent = client.ClientCode ?? ''; // Use textContent
+                row.appendChild(clientCodeCell);
+
+                // Client Name Cell
+                const clientNameCell = document.createElement('td');
+                clientNameCell.textContent = clientNameSafe; // Use textContent
+                row.appendChild(clientNameCell);
+
+                // Contact Name Cell
+                const contactNameCell = document.createElement('td');
+                contactNameCell.textContent = client.ContactName ?? ''; // Use textContent
+                row.appendChild(contactNameCell);
+
+                // Client Type Cell
+                const clientTypeCell = document.createElement('td');
+                clientTypeCell.textContent = clientTypeName; // Use textContent
+                row.appendChild(clientTypeCell);
+
+                // Email Address Cell
+                const emailCell = document.createElement('td');
+                emailCell.textContent = client.EmailAddress ?? ''; // Use textContent
+                row.appendChild(emailCell);
+
+                // Tel Number Cell
+                const telCell = document.createElement('td');
+                telCell.textContent = client.TelNumber ?? ''; // Use textContent
+                row.appendChild(telCell);
+
+                // Cell Number Cell
+                const cellCell = document.createElement('td');
+                cellCell.textContent = client.CellNumber ?? ''; // Use textContent
+                row.appendChild(cellCell);
+
+                // Year End Cell
+                const yearEndCell = document.createElement('td');
+                yearEndCell.textContent = yearEndName; // Use textContent
+                row.appendChild(yearEndCell);
+
+                // Client Status Cell
+                const statusCell = document.createElement('td');
+                statusCell.textContent = clientStatusName; // Use textContent
+                row.appendChild(statusCell);
+
+                // Billing Code Cell
+                const billingCodeCell = document.createElement('td');
+                billingCodeCell.textContent = client.BillingCode ?? ''; // Use textContent
+                row.appendChild(billingCodeCell);
+
+                // Actions Cell (Buttons are safe as their content/attributes are controlled)
+                const actionsCell = document.createElement('td');
+                const editButton = document.createElement('button');
+                editButton.className = 'button edit-button';
+                editButton.dataset.clientId = client.Id;
+                editButton.textContent = 'Edit'; // Button text is safe
+                actionsCell.appendChild(editButton);
+
+                const deleteButton = document.createElement('button');
+                deleteButton.className = 'button delete-button';
+                deleteButton.dataset.clientId = client.Id;
+                deleteButton.dataset.clientName = escapedClientName; // Data attribute is safe
+                deleteButton.textContent = 'Delete'; // Button text is safe
+                actionsCell.appendChild(deleteButton);
+
+                row.appendChild(actionsCell);
+
+                // *** END OF SECURE CELL CREATION ***
+
+                tableBody.appendChild(row); // Append the securely built row
             });
         } else if (totalClients === 0)
         {
@@ -246,6 +302,10 @@ async function loadClients()
         updatePaginationControls();
     }
 }
+// ========================================================================
+// === END OF XSS FIX =====================================================
+// ========================================================================
+
 
 // Update Pagination Controls Based on Current State
 function updatePaginationControls()

@@ -196,9 +196,9 @@ async function loadClients()
                 }
 
                 const row = document.createElement('tr');
-                const clientTypeName = client.ClientTypes?.Name ?? 'N/A';
-                const clientStatusName = client.ClientStatuses?.Name ?? 'N/A';
-                const yearEndName = client.YearEnds?.Name ?? 'N/A';
+                const clientTypeName = client.ClientTypes?.Name ?? '';
+                const clientStatusName = client.ClientStatuses?.Name ?? '';
+                const yearEndName = client.YearEnds?.Name ?? '';
                 const clientNameSafe = client.ClientName ?? '';
                 // Escape name for use in data-attribute (though less critical than for JS string in onclick)
                 // Using encodeURIComponent is safer for data attributes if names can have quotes/special chars

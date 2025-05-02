@@ -302,9 +302,6 @@ async function loadClients()
         updatePaginationControls();
     }
 }
-// ========================================================================
-// === END OF XSS FIX =====================================================
-// ========================================================================
 
 
 // Update Pagination Controls Based on Current State
@@ -395,7 +392,6 @@ function initializePaginationControls()
     });
 }
 
-// *** NEW FUNCTION: Setup Listeners for Add/Edit/Delete Actions ***
 function setupActionListeners()
 {
     // Listener for static "Add Client" button

@@ -16,7 +16,7 @@ const contactNameInput = document.getElementById('contactName');
 const emailAddressInput = document.getElementById('emailAddress');
 const addressTextarea = document.getElementById('address');
 const billingCodeInput = document.getElementById('billingCode');
-const clientCodeInput = document.getElementById('clientCode'); // **** ADDED ****
+const clientCodeInput = document.getElementById('clientCode');
 const clientTypeSelect = document.getElementById('clientType');
 const ckidNumberInput = document.getElementById('ckidNumber');
 const vatNumberInput = document.getElementById('vatNumber');
@@ -41,18 +41,21 @@ const newNoteTextarea = document.getElementById('new-note-content');
 const saveNoteButton = document.getElementById('save-note-button');
 const noteStatusSpan = document.getElementById('note-status');
 
-// **** ADDED: Modal DOM References ****
+// Modal DOM References
 const editNoteModal = document.getElementById('edit-note-modal');
 const editNoteTextarea = document.getElementById('edit-note-textarea');
 const editingNoteIdInput = document.getElementById('editing-note-id');
 const saveEditedNoteButton = document.getElementById('save-edited-note-button');
 const editNoteStatusSpan = document.getElementById('edit-note-status');
+// *** ADDED references for modal close/cancel buttons ***
+const modalCloseButton = editNoteModal?.querySelector('.modal-close-button');
+const modalCancelButton = editNoteModal?.querySelector('.cancel-button');
 
 
 // --- 3. Global Variables ---
 let currentMode = 'edit';
 let currentClientId = null;
-let clientNotes = []; // **** ADDED: Store fetched notes ****
+let clientNotes = []; // Store fetched notes
 
 // --- 4. Page Specific Functions ---
 
@@ -77,20 +80,18 @@ function getUrlParams()
 
 // Set Page Title
 function setPageTitle(client)
-{ // Accept client object or simple title string
+{
     if (!pageTitleElement) return;
-
     if (typeof client === 'string')
     {
         pageTitleElement.textContent = client;
     } else if (client && client.ClientName)
     {
-        // **** UPDATED: Optionally include ClientCode in title ****
         const codePart = client.ClientCode ? ` (${client.ClientCode})` : '';
         pageTitleElement.textContent = `Client Information - ${client.ClientName}${codePart}`;
     } else
     {
-        pageTitleElement.textContent = "Client Information"; // Default
+        pageTitleElement.textContent = "Client Information";
     }
 }
 
@@ -109,7 +110,6 @@ async function fetchClientData(clientId)
 
     try
     {
-        // *** Refined: Select only necessary columns ***
         const { data: client, error } = await supabase
             .from('Clients')
             .select(`
@@ -127,17 +127,14 @@ async function fetchClientData(clientId)
             alert(`Error fetching client data: ${error.message}`);
             return null;
         }
-
         if (!client)
         {
             setPageTitle(`Error: Client with ID ${clientId} not found.`);
             alert(`Client with ID ${clientId} could not be found.`);
             return null;
         }
-
         console.log("Client data fetched:", client);
         return client;
-
     } catch (err)
     {
         console.error('An unexpected error occurred fetching client data:', err);
@@ -156,17 +153,14 @@ function populateForm(client)
         if (clientForm) clientForm.reset();
         return;
     }
-    setPageTitle(client); // Pass client object to set title
-
-    // Helper function to safely set values
+    setPageTitle(client);
     const setValue = (element, value) => { if (element) element.value = value ?? ''; };
-
     setValue(clientNameInput, client.ClientName);
     setValue(contactNameInput, client.ContactName);
     setValue(emailAddressInput, client.EmailAddress);
     setValue(addressTextarea, client.Address);
     setValue(billingCodeInput, client.BillingCode);
-    setValue(clientCodeInput, client.ClientCode); // **** ADDED ****
+    setValue(clientCodeInput, client.ClientCode);
     setValue(ckidNumberInput, client.CkIdNumber);
     setValue(vatNumberInput, client.VatNumber);
     setValue(payeNumberInput, client.PayeNumber);
@@ -179,7 +173,6 @@ function populateForm(client)
     setValue(clientTypeSelect, client.ClientTypeId);
     setValue(yearEndSelect, client.YearEndId);
     setValue(clientStatusSelect, client.ClientStatusId);
-
     console.log("Form population complete.");
 }
 
@@ -188,33 +181,27 @@ async function handleFormSubmit(event)
 {
     event.preventDefault();
     resetInactivityTimer();
-
     if (!submitButton) return;
-
     const confirmMessage = currentMode === 'add'
         ? "Are you sure you want to add this new client?"
         : `Are you sure you want to update the details for ${clientNameInput?.value?.trim() || 'this client'}?`;
-
     if (!confirm(confirmMessage))
     {
         console.log(`Client ${currentMode} cancelled by user.`);
         return;
     }
-
     console.log(`Attempting to ${currentMode} client...`);
     const originalButtonText = submitButton.textContent;
     submitButton.textContent = currentMode === 'add' ? 'Saving...' : 'Updating...';
     submitButton.disabled = true;
     if (cancelButton) cancelButton.disabled = true;
-
-    // Collect data
     const clientDataPayload = {
         ClientName: clientNameInput?.value?.trim() || null,
         ContactName: contactNameInput?.value?.trim() || null,
         EmailAddress: emailAddressInput?.value?.trim() || null,
         Address: addressTextarea?.value?.trim() || null,
         BillingCode: billingCodeInput?.value?.trim() || null,
-        ClientCode: clientCodeInput?.value?.trim() || null, // **** ADDED ****
+        ClientCode: clientCodeInput?.value?.trim() || null,
         ClientTypeId: parseInt(clientTypeSelect?.value) || null,
         CkIdNumber: ckidNumberInput?.value?.trim() || null,
         VatNumber: vatNumberInput?.value?.trim() || null,
@@ -228,8 +215,6 @@ async function handleFormSubmit(event)
         YearEndId: parseInt(yearEndSelect?.value) || null,
         ClientStatusId: parseInt(clientStatusSelect?.value) || null,
     };
-
-    // Basic validation
     if (!clientDataPayload.ClientName)
     {
         alert('Client Name is required.');
@@ -238,58 +223,39 @@ async function handleFormSubmit(event)
         if (cancelButton) cancelButton.disabled = false;
         return;
     }
-
     let operationSuccessful = false;
-
     try
     {
-        let result; // Use a single variable for the result
-
+        let result;
         if (currentMode === 'add')
         {
-            result = await supabase
-                .from('Clients')
-                .insert([clientDataPayload])
-                .select() // Select the newly inserted row
-                .single(); // Expecting a single row back
+            result = await supabase.from('Clients').insert([clientDataPayload]).select().single();
         } else
-        { // 'edit'
+        {
             if (!currentClientId) throw new Error("Client ID missing for update.");
-            result = await supabase
-                .from('Clients')
-                .update(clientDataPayload)
-                .eq('Id', currentClientId)
-                .select() // Select the updated row
-                .single(); // Expecting a single row back
+            result = await supabase.from('Clients').update(clientDataPayload).eq('Id', currentClientId).select().single();
         }
-
-        const { data, error } = result; // Destructure result
-
+        const { data, error } = result;
         if (error)
         {
             console.error(`Error ${currentMode === 'add' ? 'adding' : 'updating'} client:`, error);
             if (error.code === '23505' && error.message.includes('ClientCode'))
             {
                 alert(`Error: Client Code "${clientDataPayload.ClientCode}" already exists. Please use a unique code.`);
-            } else
-            {
-                alert(`Error: ${error.message}`);
-            }
+            } else { alert(`Error: ${error.message}`); }
         } else
         {
             console.log(`Client ${currentMode === 'add' ? 'added' : 'updated'} successfully:`, data);
             alert(`Client ${currentMode === 'add' ? 'added' : 'updated'} successfully!`);
             operationSuccessful = true;
-
             if (currentMode === 'add' && data?.Id)
             {
-                // Navigate to the edit view of the newly created client
                 window.location.href = `ClientView.html?clientId=${data.Id}`;
-                return; // Prevent button reset below
+                return;
             } else if (currentMode === 'edit' && data)
             {
-                setPageTitle(data); // Update title with potentially new name/code
-                populateForm(data); // Re-populate form in case DB triggers changed something
+                setPageTitle(data);
+                populateForm(data);
             }
         }
     } catch (err)
@@ -298,21 +264,15 @@ async function handleFormSubmit(event)
         alert(`An unexpected error occurred. Please check console.`);
     } finally
     {
-        // Re-enable buttons only if the operation failed or it was an edit
-        // For successful 'add', we navigate away, so no need to re-enable.
         if (!operationSuccessful || currentMode === 'edit')
         {
-            if (submitButton)
-            {
-                submitButton.textContent = originalButtonText;
-                submitButton.disabled = false;
-            }
-            if (cancelButton) cancelButton.disabled = false;
+            if (submitButton) { submitButton.textContent = originalButtonText; submitButton.disabled = false; }
+            if (cancelButton) { cancelButton.disabled = false; }
         }
     }
 }
 
-// Cancel Button Logic
+// Cancel Button Logic (for main form)
 function handleCancelClick()
 {
     resetInactivityTimer();
@@ -330,210 +290,126 @@ async function fetchNotesForClient()
     if (!currentClientId)
     {
         console.error("Cannot fetch notes: Client ID is missing.");
-        clientNotes = []; // Clear local cache
-        return { notes: [], userMap: new Map() }; // Return empty data
+        clientNotes = []; return { notes: [], userMap: new Map() };
     }
     console.log(`[fetchNotesForClient] Fetching notes for client ID: ${currentClientId}`);
     if (notesTableBody) notesTableBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Loading notes...</td></tr>';
-
     try
     {
-        // Fetch notes
-        const { data: notes, error: notesError } = await supabase
-            .from('Notes')
-            .select(`id, note_content, created_at, client_id, created_by`)
-            .eq('client_id', currentClientId)
-            .order('created_at', { ascending: false });
-
-        if (notesError)
-        {
-            console.error('[fetchNotesForClient] Fetch ERROR:', notesError);
-            clientNotes = []; // Clear notes on error
-            throw notesError; // Rethrow to be caught below
-        }
-
-        if (!notes)
-        {
-            clientNotes = []; // Clear notes if none found
-            return { notes: [], userMap: new Map() }; // No notes found
-        }
-
-        // Store notes globally
-        clientNotes = notes;
-
-        // Get unique creator IDs
+        const { data: notes, error: notesError } = await supabase.from('Notes').select(`id, note_content, created_at, client_id, created_by`).eq('client_id', currentClientId).order('created_at', { ascending: false });
+        if (notesError) { console.error('[fetchNotesForClient] Fetch ERROR:', notesError); clientNotes = []; throw notesError; }
+        if (!notes) { clientNotes = []; return { notes: [], userMap: new Map() }; }
+        clientNotes = notes; // Store globally
         const creatorIds = [...new Set(notes.map(note => note.created_by).filter(id => id))];
         const userNamesMap = new Map();
-
-        // Fetch profiles if there are creators
         if (creatorIds.length > 0)
         {
-            const { data: profiles, error: profileError } = await supabase
-                .from('Profiles')
-                .select('id, full_name') // *** Refined: Only fetch needed columns ***
-                .in('id', creatorIds);
-
-            if (profileError)
-            {
-                console.error('[fetchNotesForClient] Error fetching profiles:', profileError);
-                // Continue without names, fallbacks will be used
-            } else if (profiles)
-            {
-                profiles.forEach(profile =>
-                {
-                    userNamesMap.set(profile.id, profile.full_name?.trim() || `User (${profile.id.substring(0, 6)}...)`);
-                });
-            }
+            const { data: profiles, error: profileError } = await supabase.from('Profiles').select('id, full_name').in('id', creatorIds);
+            if (profileError) { console.error('[fetchNotesForClient] Error fetching profiles:', profileError); }
+            else if (profiles) { profiles.forEach(profile => { userNamesMap.set(profile.id, profile.full_name?.trim() || `User (${profile.id.substring(0, 6)}...)`); }); }
         }
         console.log('[fetchNotesForClient] Fetch SUCCESS. Notes:', notes.length, 'Profiles Mapped:', userNamesMap.size);
         return { notes, userMap: userNamesMap };
-
     } catch (err)
     {
         console.error('[fetchNotesForClient] Error processing notes:', err);
         if (notesTableBody) notesTableBody.innerHTML = `<tr><td colspan="4" style="color: red; text-align: center;">Error loading notes: ${err.message}</td></tr>`;
-        clientNotes = []; // Clear notes on error
-        return { notes: [], userMap: new Map() }; // Return empty on error
+        clientNotes = []; return { notes: [], userMap: new Map() };
     }
 }
 
-// ===============================================================
-// === XSS FIX APPLIED BELOW =====================================
-// ===============================================================
-// Display notes in the table (NOW SECURE AGAINST XSS via note_content)
+// Display notes in the table (using Event Delegation for buttons)
 async function displayNotes(notes, userMap)
 {
     if (!notesTableBody) return;
-    notesTableBody.innerHTML = ''; // Clear previous content
-
+    notesTableBody.innerHTML = '';
     if (!notes || notes.length === 0)
     {
         notesTableBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No notes found for this client.</td></tr>';
         return;
     }
-
     const { data: { user } } = await supabase.auth.getUser();
     const currentUserId = user?.id;
-
     notes.forEach(note =>
     {
-        const row = document.createElement('tr'); // Create the row
-
-        // --- Create Date Cell ---
+        const row = document.createElement('tr');
+        // Date Cell
         const dateCell = document.createElement('td');
         dateCell.className = 'tabledate';
         const createdAtDate = note.created_at ? new Date(note.created_at) : null;
-        const formattedDate = createdAtDate
-            ? createdAtDate.toLocaleDateString('en-ZA', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })
-            : 'N/A';
-        dateCell.textContent = formattedDate; // Use textContent
-
-        // --- Create Note Cell (SECURE WAY) ---
+        dateCell.textContent = createdAtDate ? createdAtDate.toLocaleDateString('en-ZA', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }) : 'N/A';
+        // Note Cell (SECURE)
         const noteCell = document.createElement('td');
         noteCell.className = 'table-note';
-        noteCell.style.whiteSpace = 'pre-wrap';
-        noteCell.style.wordBreak = 'break-word';
-        // *** THE FIX: Use textContent to render note content safely ***
-        // This prevents any HTML/Script tags within the note content from being executed.
+        noteCell.style.whiteSpace = 'pre-wrap'; noteCell.style.wordBreak = 'break-word';
         noteCell.textContent = note.note_content || '';
-
-        // --- Create User Cell ---
+        // User Cell
         const userCell = document.createElement('td');
         userCell.className = 'table-user';
         let authorDisplay = 'Unknown User';
-        if (note.created_by)
-        {
-            authorDisplay = userMap.get(note.created_by) || `User (${note.created_by.substring(0, 6)}...)`;
-        }
-        userCell.textContent = authorDisplay; // Use textContent
-
-        // --- Create Actions Cell ---
+        if (note.created_by) { authorDisplay = userMap.get(note.created_by) || `User (${note.created_by.substring(0, 6)}...)`; }
+        userCell.textContent = authorDisplay;
+        // Actions Cell (Buttons with data attributes)
         const actionsCell = document.createElement('td');
         actionsCell.className = 'table-actions';
         const isOwner = currentUserId && note.created_by === currentUserId;
-
-        // Generate button HTML (safe here as it's based on trusted logic, not user note content)
-        // Escaping note content for preview *only in the delete confirmation*
+        // Edit Button
+        const editButton = document.createElement('button');
+        editButton.className = 'button edit-note-button';
+        editButton.dataset.noteId = note.id;
+        editButton.textContent = 'Edit';
+        if (!isOwner) { editButton.disabled = true; editButton.title = 'You can only edit your own notes'; }
+        actionsCell.appendChild(editButton);
+        // Delete Button
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'button delete-note-button';
+        deleteButton.dataset.noteId = note.id;
         const notePreview = (note.note_content || '').substring(0, 30) + (note.note_content && note.note_content.length > 30 ? '...' : '');
-        const notePreviewSafe = notePreview.replace(/'/g, "\\'"); // Escape for use in JS string within HTML
-
-        const editButtonHtml = isOwner
-            ? `<button class="button" onclick="openEditNoteModal(${note.id})">Edit</button>`
-            : `<button class="button" disabled title="You can only edit your own notes">Edit</button>`;
-
-        const deleteButtonHtml = isOwner
-            ? `<button class="button" onclick="deleteNoteHandler(${note.id}, '${notePreviewSafe}')">Delete</button>`
-            : `<button class="button" disabled title="You can only delete your own notes">Delete</button>`;
-
-        // Set the innerHTML for the actions cell (contains only our generated buttons)
-        actionsCell.innerHTML = `${editButtonHtml} ${deleteButtonHtml}`;
-
-        // --- Append all cells to the row ---
+        deleteButton.dataset.notePreview = notePreview;
+        deleteButton.textContent = 'Delete';
+        if (!isOwner) { deleteButton.disabled = true; deleteButton.title = 'You can only delete your own notes'; }
+        actionsCell.appendChild(deleteButton);
+        // Append cells and row
         row.append(dateCell, noteCell, userCell, actionsCell);
-
-        // --- Append the row to the table body ---
         notesTableBody.appendChild(row);
     });
     console.log("[displayNotes] Finished rendering notes table securely.");
 }
-// ===============================================================
-// === END OF XSS FIX ============================================
-// ===============================================================
-
 
 // Wrapper to load and display notes
 async function loadAndDisplayNotes()
 {
     if (currentMode === 'edit' && currentClientId)
     {
-        const { notes, userMap } = await fetchNotesForClient(); // This now updates clientNotes array
-        await displayNotes(notes, userMap); // Call the updated, secure display function
+        const { notes, userMap } = await fetchNotesForClient();
+        await displayNotes(notes, userMap);
     }
 }
-
 
 // Save New Note Handler
 async function saveNewNoteHandler()
 {
     resetInactivityTimer();
     const noteContent = newNoteTextarea?.value?.trim();
-
-    if (!noteContent)
-    {
-        alert("Please enter some content for the note.");
-        return;
-    }
-    if (!currentClientId)
-    {
-        alert("Error: Cannot save note. Client context is missing.");
-        return;
-    }
+    if (!noteContent) { alert("Please enter some content for the note."); return; }
+    if (!currentClientId) { alert("Error: Cannot save note. Client context is missing."); return; }
     if (!saveNoteButton || !noteStatusSpan || !newNoteTextarea) return;
-
     saveNoteButton.disabled = true;
-    noteStatusSpan.textContent = 'Saving...';
-    noteStatusSpan.style.color = 'orange';
-
+    noteStatusSpan.textContent = 'Saving...'; noteStatusSpan.style.color = 'orange';
     try
     {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error("Could not get current user to save note.");
-
-        const { error: insertError } = await supabase
-            .from('Notes')
-            .insert({ client_id: currentClientId, note_content: noteContent, created_by: user.id });
-
+        const { error: insertError } = await supabase.from('Notes').insert({ client_id: currentClientId, note_content: noteContent, created_by: user.id });
         if (insertError)
         {
             console.error('[saveNewNote] Insert ERROR:', insertError);
             alert(`Failed to save note: ${insertError.message}`);
-            noteStatusSpan.textContent = 'Save failed.';
-            noteStatusSpan.style.color = 'red';
+            noteStatusSpan.textContent = 'Save failed.'; noteStatusSpan.style.color = 'red';
         } else
         {
-            noteStatusSpan.textContent = 'Note saved!';
-            noteStatusSpan.style.color = 'green';
-            newNoteTextarea.value = ''; // Clear textarea
+            noteStatusSpan.textContent = 'Note saved!'; noteStatusSpan.style.color = 'green';
+            newNoteTextarea.value = '';
             await loadAndDisplayNotes(); // Refresh notes list
             setTimeout(() => { if (noteStatusSpan) noteStatusSpan.textContent = ''; }, 3000);
         }
@@ -541,205 +417,100 @@ async function saveNewNoteHandler()
     {
         console.error('[saveNewNote] Unexpected error:', err);
         alert('An unexpected error occurred while saving the note.');
-        noteStatusSpan.textContent = 'Error.';
-        noteStatusSpan.style.color = 'red';
-    } finally
-    {
-        saveNoteButton.disabled = false;
-    }
-}
-// Attach directly if button exists
-if (saveNoteButton)
-{
-    saveNoteButton.onclick = saveNewNoteHandler; // Use onclick or addEventListener
+        noteStatusSpan.textContent = 'Error.'; noteStatusSpan.style.color = 'red';
+    } finally { saveNoteButton.disabled = false; }
 }
 
-
-// Delete Note Handler
-async function deleteNoteHandler(noteId, notePreview)
+// Delete Note Handler (Called from event delegation)
+async function deleteNoteHandler(noteId, notePreview, deleteButtonElement)
 {
     resetInactivityTimer();
-    if (!currentClientId) return; // Should have client id if notes are visible
-
+    if (!currentClientId) return;
     const confirmMessage = `Are you sure you want to delete this note?\n\n"${notePreview}"`;
     if (confirm(confirmMessage))
     {
-        const buttonSelector = `button[onclick^="deleteNoteHandler(${noteId},"]`;
-        const deleteButton = notesTableBody?.querySelector(buttonSelector);
-        if (deleteButton)
-        {
-            deleteButton.disabled = true;
-            deleteButton.textContent = 'Deleting...';
-        }
-
+        if (deleteButtonElement) { deleteButtonElement.disabled = true; deleteButtonElement.textContent = 'Deleting...'; }
+        else { console.warn("Could not find the specific delete button element to disable."); }
         try
         {
-            const { error } = await supabase
-                .from('Notes')
-                .delete()
-                .eq('id', noteId); // RLS policy should enforce ownership
-
+            const { error } = await supabase.from('Notes').delete().eq('id', noteId);
             if (error)
             {
-                console.error('Error deleting note:', error);
-                alert(`Failed to delete note: ${error.message}`);
-                if (deleteButton)
-                { // Re-enable button on failure
-                    deleteButton.disabled = false;
-                    deleteButton.textContent = 'Delete';
-                }
+                console.error('Error deleting note:', error); alert(`Failed to delete note: ${error.message}`);
+                if (deleteButtonElement) { deleteButtonElement.disabled = false; deleteButtonElement.textContent = 'Delete'; }
             } else
             {
-                console.log(`Note ID: ${noteId} deleted successfully.`);
-                alert(`Note deleted successfully.`);
+                console.log(`Note ID: ${noteId} deleted successfully.`); alert(`Note deleted successfully.`);
                 await loadAndDisplayNotes(); // Refresh notes list
             }
         } catch (err)
         {
-            console.error('An unexpected error occurred during note deletion:', err);
-            alert('An unexpected error occurred during deletion.');
-            if (deleteButton)
-            { // Re-enable button on failure
-                deleteButton.disabled = false;
-                deleteButton.textContent = 'Delete';
-            }
+            console.error('An unexpected error occurred during note deletion:', err); alert('An unexpected error occurred during deletion.');
+            if (deleteButtonElement) { deleteButtonElement.disabled = false; deleteButtonElement.textContent = 'Delete'; }
         }
-        // No finally block needed to re-enable, handled on error or success removes it.
     }
 }
-window.deleteNoteHandler = deleteNoteHandler; // Make globally accessible for onclick
 
-
-// Open Edit Note Modal
+// Open Edit Note Modal (Called from event delegation)
 function openEditNoteModal(noteId)
 {
     resetInactivityTimer();
     console.log(`[openEditNoteModal] Opening modal for note ID: ${noteId}`);
-
     const noteToEdit = clientNotes.find(note => note.id === noteId);
-
-    if (!noteToEdit)
-    {
-        console.error(`[openEditNoteModal] Note with ID ${noteId} not found in local cache.`);
-        alert("Error: Could not find the note data to edit.");
-        return;
-    }
-
-    if (!editNoteModal || !editNoteTextarea || !editingNoteIdInput || !editNoteStatusSpan)
-    {
-        console.error("[openEditNoteModal] Modal elements not found.");
-        return;
-    }
-
-    // Populate the modal
+    if (!noteToEdit) { console.error(`[openEditNoteModal] Note with ID ${noteId} not found.`); alert("Error: Could not find the note data to edit."); return; }
+    if (!editNoteModal || !editNoteTextarea || !editingNoteIdInput || !editNoteStatusSpan) { console.error("[openEditNoteModal] Modal elements not found."); return; }
     editNoteTextarea.value = noteToEdit.note_content || '';
-    editingNoteIdInput.value = noteId; // Store the ID
-    editNoteStatusSpan.textContent = ''; // Clear any previous status
-
-    // Show the modal
+    editingNoteIdInput.value = noteId;
+    editNoteStatusSpan.textContent = '';
     editNoteModal.style.display = 'block';
 }
-window.openEditNoteModal = openEditNoteModal; // Make globally accessible for onclick
 
-// Close Edit Note Modal
+// Close Edit Note Modal (Called by event listeners now)
 function closeEditNoteModal()
 {
     if (!editNoteModal || !editNoteTextarea || !editingNoteIdInput || !editNoteStatusSpan) return;
-
     editNoteModal.style.display = 'none';
-    editNoteTextarea.value = ''; // Clear content
-    editingNoteIdInput.value = ''; // Clear ID
+    editNoteTextarea.value = '';
+    editingNoteIdInput.value = '';
     editNoteStatusSpan.textContent = '';
-
-    // Re-enable button just in case it was disabled
-    if (saveEditedNoteButton)
-    {
-        saveEditedNoteButton.disabled = false;
-        saveEditedNoteButton.textContent = 'Save Changes';
-    }
-    // Find the cancel button specifically if needed
-    const modalCancelButton = editNoteModal.querySelector('.cancel-button');
-    if (modalCancelButton)
-    {
-        modalCancelButton.disabled = false;
-    }
+    // Re-enable buttons
+    if (saveEditedNoteButton) { saveEditedNoteButton.disabled = false; saveEditedNoteButton.textContent = 'Save Changes'; }
+    if (modalCancelButton) { modalCancelButton.disabled = false; } // Use the variable defined at the top
 }
-window.closeEditNoteModal = closeEditNoteModal; // Make globally accessible for onclick (used by modal's own close button)
+// *** REMOVED: window.closeEditNoteModal = closeEditNoteModal; *** No longer needed globally
 
 // Save Edited Note Handler
 async function saveEditedNoteHandler()
 {
     resetInactivityTimer();
-    if (!editNoteModal || !editNoteTextarea || !editingNoteIdInput || !saveEditedNoteButton || !editNoteStatusSpan)
-    {
-        console.error("[saveEditedNoteHandler] Modal elements not found.");
-        return;
-    }
-
+    if (!editNoteModal || !editNoteTextarea || !editingNoteIdInput || !saveEditedNoteButton || !editNoteStatusSpan) { console.error("[saveEditedNoteHandler] Modal elements not found."); return; }
     const noteId = parseInt(editingNoteIdInput.value);
     const updatedContent = editNoteTextarea.value.trim();
-
-    if (isNaN(noteId) || noteId <= 0)
-    {
-        alert("Error: Invalid Note ID detected.");
-        return;
-    }
-
-    if (!updatedContent)
-    {
-        alert("Note content cannot be empty.");
-        editNoteTextarea.focus();
-        return;
-    }
-
-    saveEditedNoteButton.disabled = true;
-    saveEditedNoteButton.textContent = 'Saving...';
-    editNoteStatusSpan.textContent = 'Saving...';
-    editNoteStatusSpan.style.color = 'orange';
-    // Disable cancel button too
-    const modalCancelButton = editNoteModal.querySelector('.cancel-button');
-    if (modalCancelButton) modalCancelButton.disabled = true;
-
+    if (isNaN(noteId) || noteId <= 0) { alert("Error: Invalid Note ID detected."); return; }
+    if (!updatedContent) { alert("Note content cannot be empty."); editNoteTextarea.focus(); return; }
+    saveEditedNoteButton.disabled = true; saveEditedNoteButton.textContent = 'Saving...';
+    editNoteStatusSpan.textContent = 'Saving...'; editNoteStatusSpan.style.color = 'orange';
+    if (modalCancelButton) modalCancelButton.disabled = true; // Use the variable defined at the top
     try
     {
-        // RLS Policy should enforce that the user can only update their own note.
-        const { error } = await supabase
-            .from('Notes')
-            .update({ note_content: updatedContent })
-            .eq('id', noteId);
-
+        const { error } = await supabase.from('Notes').update({ note_content: updatedContent }).eq('id', noteId);
         if (error)
         {
-            console.error('[saveEditedNoteHandler] Update ERROR:', error);
-            alert(`Failed to update note: ${error.message}`);
-            editNoteStatusSpan.textContent = 'Update failed.';
-            editNoteStatusSpan.style.color = 'red';
-            // Re-enable buttons on failure
-            saveEditedNoteButton.disabled = false;
-            saveEditedNoteButton.textContent = 'Save Changes';
+            console.error('[saveEditedNoteHandler] Update ERROR:', error); alert(`Failed to update note: ${error.message}`);
+            editNoteStatusSpan.textContent = 'Update failed.'; editNoteStatusSpan.style.color = 'red';
+            saveEditedNoteButton.disabled = false; saveEditedNoteButton.textContent = 'Save Changes';
             if (modalCancelButton) modalCancelButton.disabled = false;
-
         } else
         {
             console.log(`[saveEditedNoteHandler] Note ID: ${noteId} updated successfully.`);
-            editNoteStatusSpan.textContent = 'Note updated!';
-            editNoteStatusSpan.style.color = 'green';
-            // Keep status for a moment, then close and refresh
-            setTimeout(async () =>
-            {
-                closeEditNoteModal();
-                await loadAndDisplayNotes(); // Refresh the notes list
-            }, 1500); // Close after 1.5 seconds
+            editNoteStatusSpan.textContent = 'Note updated!'; editNoteStatusSpan.style.color = 'green';
+            setTimeout(async () => { closeEditNoteModal(); await loadAndDisplayNotes(); }, 1500);
         }
     } catch (err)
     {
-        console.error('[saveEditedNoteHandler] Unexpected error:', err);
-        alert('An unexpected error occurred while updating the note.');
-        editNoteStatusSpan.textContent = 'Error.';
-        editNoteStatusSpan.style.color = 'red';
-        // Re-enable buttons on unexpected error
-        saveEditedNoteButton.disabled = false;
-        saveEditedNoteButton.textContent = 'Save Changes';
+        console.error('[saveEditedNoteHandler] Unexpected error:', err); alert('An unexpected error occurred while updating the note.');
+        editNoteStatusSpan.textContent = 'Error.'; editNoteStatusSpan.style.color = 'red';
+        saveEditedNoteButton.disabled = false; saveEditedNoteButton.textContent = 'Save Changes';
         if (modalCancelButton) modalCancelButton.disabled = false;
     }
 }
@@ -757,13 +528,7 @@ async function initializePage()
     if (!session) return;
 
     // 3. Get Mode & Client ID
-    if (!getUrlParams())
-    {
-        setPageTitle("Error: Invalid Client ID");
-        if (clientForm) clientForm.style.display = 'none';
-        if (notesSectionDiv) notesSectionDiv.style.display = 'none';
-        return;
-    }
+    if (!getUrlParams()) { /* ... error handling ... */ return; }
 
     // 4. Setup based on mode
     if (currentMode === 'add')
@@ -771,7 +536,7 @@ async function initializePage()
         setPageTitle("Add New Client");
         if (clientForm) clientForm.reset();
         if (submitButton) submitButton.textContent = 'Save New Client';
-        if (clientForm) clientForm.style.display = 'grid'; // Use grid display
+        if (clientForm) clientForm.style.display = 'grid';
         if (notesSectionDiv) notesSectionDiv.style.display = 'none';
     } else
     { // 'edit' mode
@@ -780,45 +545,93 @@ async function initializePage()
         if (clientData)
         {
             populateForm(clientData);
-            if (clientForm) clientForm.style.display = 'grid'; // Use grid display
-            if (notesSectionDiv) notesSectionDiv.style.display = ''; // Show notes section
-            await loadAndDisplayNotes(); // Load notes for existing client
+            if (clientForm) clientForm.style.display = 'grid';
+            if (notesSectionDiv) notesSectionDiv.style.display = '';
+            await loadAndDisplayNotes();
         } else
         {
-            // Error handled in fetchClientData, prevent form/notes from showing
             if (clientForm) clientForm.style.display = 'none';
             if (notesSectionDiv) notesSectionDiv.style.display = 'none';
-            return; // Stop further initialization if client load failed
+            return;
         }
     }
 
     // 5. Attach Form Handlers
     if (clientForm) clientForm.addEventListener('submit', handleFormSubmit);
-    if (cancelButton) cancelButton.addEventListener('click', handleCancelClick);
+    if (cancelButton) cancelButton.addEventListener('click', handleCancelClick); // Main form cancel
 
-    // Attach Modal Save Button Handler
+    // 6. Attach Modal Save Button Handler
     if (saveEditedNoteButton)
     {
         saveEditedNoteButton.addEventListener('click', saveEditedNoteHandler);
     } else
     {
-        console.error("Save Edited Note button (#save-edited-note-button) not found during initialization.");
+        console.error("Save Edited Note button (#save-edited-note-button) not found.");
     }
 
-    // Close modal if user clicks outside of it
+    // 7. Attach Modal Close/Cancel Button Handlers *** ADDED ***
+    if (modalCloseButton)
+    {
+        modalCloseButton.addEventListener('click', closeEditNoteModal);
+    } else
+    {
+        console.error("Modal close button (.modal-close-button) not found.");
+    }
+    if (modalCancelButton)
+    {
+        modalCancelButton.addEventListener('click', closeEditNoteModal);
+    } else
+    {
+        console.error("Modal cancel button (.cancel-button) not found.");
+    }
+
+    // 8. Attach Save New Note Button Handler
+    if (saveNoteButton)
+    {
+        saveNoteButton.addEventListener('click', saveNewNoteHandler);
+    } else
+    {
+        console.error("Save New Note button (#save-note-button) not found.");
+    }
+
+
+    // 9. Setup Event Delegation for Notes Table Actions
+    if (notesTableBody)
+    {
+        notesTableBody.addEventListener('click', (event) =>
+        {
+            const target = event.target;
+            if (target.classList.contains('edit-note-button'))
+            {
+                const noteId = parseInt(target.dataset.noteId);
+                if (!isNaN(noteId)) { openEditNoteModal(noteId); }
+                else { console.error("Invalid note ID on edit button:", target.dataset.noteId); }
+            }
+            else if (target.classList.contains('delete-note-button'))
+            {
+                const noteId = parseInt(target.dataset.noteId);
+                const notePreview = target.dataset.notePreview || '(Preview unavailable)';
+                if (!isNaN(noteId)) { deleteNoteHandler(noteId, notePreview, target); }
+                else { console.error("Invalid note ID on delete button:", target.dataset.noteId); }
+            }
+        });
+        console.log("Event listener for note actions attached to table body.");
+    } else
+    {
+        console.error("Notes table body not found for event delegation setup.");
+    }
+
+
+    // 10. Close modal if user clicks outside of it
     if (editNoteModal)
     {
         window.addEventListener('click', (event) =>
         {
-            if (event.target == editNoteModal)
-            { // Check if the click is directly on the modal overlay
-                closeEditNoteModal();
-            }
+            if (event.target == editNoteModal) { closeEditNoteModal(); }
         });
     }
 
-
-    // 6. Start Inactivity Detection
+    // 11. Start Inactivity Detection
     setupInactivityDetection();
 }
 

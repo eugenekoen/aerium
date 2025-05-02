@@ -4,22 +4,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="
-    default-src 'self';
-    script-src 'self' https://cdn.jsdelivr.net;
-    img-src 'self' data: https://rezjbpyicdasqlhldwok.supabase.co;
-    connect-src 'self' https://rezjbpyicdasqlhldwok.supabase.co wss://rezjbpyicdasqlhldwok.supabase.co;
-    font-src 'self';
-    object-src 'none';
-    frame-ancestors 'none';
-    form-action 'self';
-    base-uri 'self';
-    upgrade-insecure-requests;
-">
     <!-- Updated CSS Path -->
     <link rel="stylesheet" href="css/app.css">
     <!-- Updated Favicon Path -->
     <link rel="shortcut icon" href="assets/app_icon.png" />
+    <!-- *** ADDED CSP META TAG *** -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' https://cdn.jsdelivr.net;
+        style-src 'self' 'unsafe-inline';
+        img-src 'self' data: https://rezjbpyicdasqlhldwok.supabase.co;
+        connect-src 'self' https://rezjbpyicdasqlhldwok.supabase.co wss://rezjbpyicdasqlhldwok.supabase.co;
+        font-src 'self';
+        object-src 'none';
+        frame-ancestors 'none';
+        form-action 'self';
+        base-uri 'self';
+        upgrade-insecure-requests;
+    ">
     <title>Aerium - All Clients</title>
     <!-- Include the Supabase JS library via CDN (Keep this here) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -49,8 +51,8 @@
         </div>
 
         <div class="top-buttons-list-view">
-            <!-- Ensure the function name matches the one exposed in JS -->
-            <button class="button" onclick="navigateToAddClient()">Add Client</button>
+            <!-- *** MODIFIED: Removed onclick, Added id *** -->
+            <button class="button" id="add-client-button">Add Client</button>
         </div>
         <table class="client-list-view-table">
             <thead>

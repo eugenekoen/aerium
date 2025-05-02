@@ -14,7 +14,7 @@ import
 
 // --- 2. Page Specific Variables & DOM References ---
 const tableBody = document.getElementById('client-table-body');
-let prevPageBtn, nextPageBtn, pageInfo, pageSizeSelect;
+let prevPageBtn, nextPageBtn, pageInfo, pageSizeSelect, addClientBtn; // Added addClientBtn
 
 // Pagination State
 let currentPage = 1;
@@ -30,7 +30,7 @@ function navigateToAddClient()
     resetInactivityTimer();
     window.location.href = 'ClientView.html?mode=add';
 }
-window.navigateToAddClient = navigateToAddClient;
+// *** REMOVED window.navigateToAddClient = navigateToAddClient; ***
 
 // Edit Client Function
 function editClient(clientId)
@@ -43,39 +43,68 @@ function editClient(clientId)
         return;
     }
     resetInactivityTimer();
-    const editUrl = `ClientView.html?clientId=${clientId}`;
+    // Convert clientId to number just in case it came from dataset as string
+    const id = parseInt(clientId);
+    if (isNaN(id))
+    {
+        console.error("[editClient] Parsed clientId is NaN:", clientId);
+        alert("Error: Invalid Client ID format.");
+        return;
+    }
+    const editUrl = `ClientView.html?clientId=${id}`;
     console.log(`[editClient] Navigating to: ${editUrl}`);
     window.location.href = editUrl;
 }
-window.editClient = editClient;
+// *** REMOVED window.editClient = editClient; ***
 
 // Delete Client Function
 async function deleteClient(clientId, clientName)
 {
     resetInactivityTimer();
-    const safeClientName = clientName || `Client ID ${clientId}`;
+    // Convert clientId to number just in case it came from dataset as string
+    const id = parseInt(clientId);
+    if (isNaN(id))
+    {
+        console.error("[deleteClient] Parsed clientId is NaN:", clientId);
+        alert("Error: Invalid Client ID format for deletion.");
+        return;
+    }
+    // Use the provided name, fallback if it's somehow missing/undefined
+    const safeClientName = clientName || `Client ID ${id}`;
 
     if (confirm(`Are you sure you want to delete client: ${safeClientName}? \n\nTHIS ACTION CANNOT BE UNDONE.`))
     {
-        console.log(`Attempting to delete client with ID: ${clientId}`);
-        const deleteButtons = document.querySelectorAll(`button[onclick^="deleteClient(${clientId},"]`);
+        console.log(`Attempting to delete client with ID: ${id}`);
+        // Find button using data attributes now
+        const deleteButton = tableBody.querySelector(`button.delete-button[data-client-id="${id}"]`);
         try
         {
-            deleteButtons.forEach(btn => { btn.disabled = true; btn.textContent = 'Deleting...'; });
+            if (deleteButton)
+            {
+                deleteButton.disabled = true;
+                deleteButton.textContent = 'Deleting...';
+            } else
+            {
+                console.warn("Could not find the specific delete button to disable.")
+            }
 
             const { error } = await supabase
                 .from('Clients')
                 .delete()
-                .eq('Id', clientId);
+                .eq('Id', id); // Use the parsed ID
 
             if (error)
             {
                 console.error('Error deleting client:', error);
                 alert(`Failed to delete client "${safeClientName}": ${error.message}`);
-                deleteButtons.forEach(btn => { btn.disabled = false; btn.textContent = 'Delete'; });
+                if (deleteButton)
+                {
+                    deleteButton.disabled = false;
+                    deleteButton.textContent = 'Delete';
+                }
             } else
             {
-                console.log(`Client ID: ${clientId} (${safeClientName}) deleted successfully.`);
+                console.log(`Client ID: ${id} (${safeClientName}) deleted successfully.`);
                 alert(`Client "${safeClientName}" deleted successfully.`);
                 await loadClients(); // Reload data
             }
@@ -83,14 +112,18 @@ async function deleteClient(clientId, clientName)
         {
             console.error('An unexpected error occurred during deletion:', err);
             alert('An unexpected error occurred during deletion. Check console.');
-            deleteButtons.forEach(btn => { btn.disabled = false; btn.textContent = 'Delete'; });
+            if (deleteButton)
+            {
+                deleteButton.disabled = false;
+                deleteButton.textContent = 'Delete';
+            }
         }
     } else
     {
         console.log('Client deletion cancelled by user.');
     }
 }
-window.deleteClient = deleteClient;
+// *** REMOVED window.deleteClient = deleteClient; ***
 
 
 // Function to Get Total Count of Clients
@@ -119,7 +152,6 @@ async function getClientCount()
 async function loadClients()
 {
     if (!tableBody) return;
-    // **** UPDATE COLSPAN to 11 ****
     tableBody.innerHTML = '<tr><td colspan="11" style="text-align: center;">Loading clients...</td></tr>';
 
     if (prevPageBtn) prevPageBtn.disabled = true;
@@ -131,7 +163,7 @@ async function loadClients()
         const offset = (currentPage - 1) * pageSize;
         const maxRange = offset + pageSize - 1;
 
-        // **** ADD ClientCode to SELECT ****
+        // Fetch data (refined select columns)
         let { data: clients, error } = await supabase
             .from('Clients')
             .select(`
@@ -146,7 +178,6 @@ async function loadClients()
         if (error)
         {
             console.error('Error fetching clients:', error);
-            // **** UPDATE COLSPAN to 11 ****
             tableBody.innerHTML = `<tr><td colspan="11" style="color: red; text-align: center;">Error loading clients: ${error.message}</td></tr>`;
             updatePaginationControls();
             return;
@@ -161,7 +192,7 @@ async function loadClients()
                 if (client.Id === undefined || client.Id === null)
                 {
                     console.warn(`[loadClients] Client found with missing ID:`, client);
-                    return;
+                    return; // Skip rendering this row
                 }
 
                 const row = document.createElement('tr');
@@ -169,12 +200,14 @@ async function loadClients()
                 const clientStatusName = client.ClientStatuses?.Name ?? 'N/A';
                 const yearEndName = client.YearEnds?.Name ?? 'N/A';
                 const clientNameSafe = client.ClientName ?? '';
-                const escapedClientName = clientNameSafe.replace(/'/g, "\\'");
+                // Escape name for use in data-attribute (though less critical than for JS string in onclick)
+                // Using encodeURIComponent is safer for data attributes if names can have quotes/special chars
+                const escapedClientName = encodeURIComponent(clientNameSafe);
 
-                // **** ADD ClientCode CELL ****
+                // *** MODIFIED: Removed onclick, added data-* attributes and classes ***
                 row.innerHTML = `
                     <td style="text-align: center">${client.ClientCode ?? ''}</td>
-                    <td>${clientNameSafe}</td>                    
+                    <td>${clientNameSafe}</td>
                     <td>${client.ContactName ?? ''}</td>
                     <td>${clientTypeName}</td>
                     <td>${client.EmailAddress ?? ''}</td>
@@ -184,24 +217,24 @@ async function loadClients()
                     <td>${clientStatusName}</td>
                     <td>${client.BillingCode ?? ''}</td>
                     <td>
-                        <button class="button" onclick="editClient(${client.Id})">Edit</button>
-                        <button class="button" onclick="deleteClient(${client.Id}, '${escapedClientName}')">Delete</button>
+                        <button class="button edit-button" data-client-id="${client.Id}">Edit</button>
+                        <button class="button delete-button" data-client-id="${client.Id}" data-client-name="${escapedClientName}">Delete</button>
                     </td>
                 `;
                 tableBody.appendChild(row);
             });
         } else if (totalClients === 0)
         {
-            // **** UPDATE COLSPAN to 11 ****
             tableBody.innerHTML = '<tr><td colspan="11" style="text-align: center;">No clients found.</td></tr>';
         } else
         {
-            // **** UPDATE COLSPAN to 11 ****
             tableBody.innerHTML = `<tr><td colspan="11" style="text-align: center;">No clients found on this page.</td></tr>`;
             if (currentPage > 1)
             {
                 console.log("Current page empty, attempting to go to previous page.");
                 currentPage--;
+                // Consider reloading if page becomes empty after deletion on last page
+                setTimeout(loadClients, 0); // Reload to show previous page
             }
         }
         updatePaginationControls();
@@ -209,7 +242,6 @@ async function loadClients()
     } catch (err)
     {
         console.error('An unexpected error occurred loading clients:', err);
-        // **** UPDATE COLSPAN to 11 ****
         tableBody.innerHTML = '<tr><td colspan="11" style="color: red; text-align: center;">An unexpected error occurred. Check console.</td></tr>';
         updatePaginationControls();
     }
@@ -227,25 +259,30 @@ function updatePaginationControls()
     const displayTotalPages = Math.max(totalPages, 1);
     let pageChanged = false;
 
+    // Prevent current page from exceeding total pages
     if (currentPage > displayTotalPages)
     {
-        console.log(`Current page ${currentPage} is out of bounds (max ${displayTotalPages}). Resetting to page ${displayTotalPages}.`);
         currentPage = displayTotalPages;
         pageChanged = true;
-    } else if (currentPage < 1)
+    }
+    // Prevent current page from being less than 1
+    if (currentPage < 1)
     {
         currentPage = 1;
-        pageChanged = true;
+        // No need to set pageChanged=true here, as initial load handles page 1.
     }
+
 
     pageInfo.textContent = `Page ${currentPage} of ${displayTotalPages}`;
     prevPageBtn.disabled = currentPage <= 1;
     nextPageBtn.disabled = currentPage >= displayTotalPages || totalClients === 0;
-    pageSizeSelect.value = pageSize;
+    pageSizeSelect.value = pageSize; // Ensure dropdown matches state
 
+    // If page was corrected *and* it wasn't just reset to 1 for an empty table
     if (pageChanged && !(currentPage === 1 && totalClients === 0))
     {
         console.log("Reloading clients due to page correction.");
+        // Use setTimeout to avoid potential infinite loops if calculation is wrong
         setTimeout(loadClients, 0);
     }
 }
@@ -264,8 +301,9 @@ function initializePaginationControls()
         console.error("One or more pagination control elements are missing in the HTML.");
         return;
     }
+    // Load pageSize from localStorage or default
     pageSize = parseInt(localStorage.getItem('clientListPageSize') || '10');
-    pageSizeSelect.value = pageSize;
+    pageSizeSelect.value = pageSize; // Set dropdown initial value
 
     prevPageBtn.addEventListener('click', () =>
     {
@@ -279,6 +317,7 @@ function initializePaginationControls()
     nextPageBtn.addEventListener('click', () =>
     {
         resetInactivityTimer();
+        // Recalculate totalPages here in case totalClients changed
         const totalPages = Math.ceil(totalClients / pageSize);
         if (currentPage < totalPages)
         {
@@ -291,9 +330,66 @@ function initializePaginationControls()
         resetInactivityTimer();
         pageSize = parseInt(pageSizeSelect.value);
         localStorage.setItem('clientListPageSize', pageSize);
-        currentPage = 1;
+        currentPage = 1; // Reset to page 1 when size changes
         loadClients();
     });
+}
+
+// *** NEW FUNCTION: Setup Listeners for Add/Edit/Delete Actions ***
+function setupActionListeners()
+{
+    // Listener for static "Add Client" button
+    addClientBtn = document.getElementById('add-client-button');
+    if (addClientBtn)
+    {
+        addClientBtn.addEventListener('click', navigateToAddClient);
+    } else
+    {
+        console.error("Add Client button not found.");
+    }
+
+    // Listener for dynamic Edit/Delete buttons (Event Delegation)
+    if (tableBody)
+    {
+        tableBody.addEventListener('click', (event) =>
+        {
+            const target = event.target; // The element that was actually clicked
+
+            // Check if the clicked element is an Edit button
+            if (target.classList.contains('edit-button'))
+            {
+                resetInactivityTimer(); // Reset on action
+                const clientId = target.dataset.clientId; // Get ID from data attribute
+                if (clientId)
+                {
+                    editClient(clientId);
+                } else
+                {
+                    console.error("Edit button clicked, but client ID not found in data attribute.");
+                }
+            }
+            // Check if the clicked element is a Delete button
+            else if (target.classList.contains('delete-button'))
+            {
+                resetInactivityTimer(); // Reset on action
+                const clientId = target.dataset.clientId;
+                // Decode the name from data attribute
+                const encodedClientName = target.dataset.clientName;
+                const clientName = encodedClientName ? decodeURIComponent(encodedClientName) : null;
+
+                if (clientId)
+                {
+                    deleteClient(clientId, clientName); // Pass name too
+                } else
+                {
+                    console.error("Delete button clicked, but client ID not found in data attribute.");
+                }
+            }
+        });
+    } else
+    {
+        console.error("Client table body not found for event delegation.");
+    }
 }
 
 // --- 4. Initialization ---
@@ -303,10 +399,11 @@ async function initializePage()
     const session = await checkAuthAndRedirect();
     if (!session) return;
 
-    // **** UPDATE COLSPAN to 11 ****
     if (tableBody) tableBody.innerHTML = '<tr><td colspan="11" style="text-align: center;">Checking authentication... Done. Loading data...</td></tr>';
+
     initializePaginationControls();
-    await loadClients();
+    setupActionListeners(); // *** ADDED CALL to setup listeners ***
+    await loadClients(); // Load initial client data
     setupInactivityDetection();
 }
 

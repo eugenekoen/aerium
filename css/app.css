@@ -671,6 +671,7 @@ body.login-body {
 }
 
 #edit-note-textarea {
+    font-family: "Roboto", sans-serif;
     width: 100%;
     padding: 10px;
     margin-bottom: 15px;

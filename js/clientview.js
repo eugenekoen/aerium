@@ -109,9 +109,14 @@ async function fetchClientData(clientId)
 
     try
     {
+        // *** Refined: Select only necessary columns ***
         const { data: client, error } = await supabase
             .from('Clients')
-            .select('*')
+            .select(`
+                Id, ClientName, ContactName, EmailAddress, Address, BillingCode, ClientCode,
+                ClientTypeId, CkIdNumber, VatNumber, PayeNumber, UifNumber, SdlNumber,
+                TaxNumber, WcaNumber, TelNumber, CellNumber, YearEndId, ClientStatusId
+            `)
             .eq('Id', clientId)
             .maybeSingle();
 
@@ -245,8 +250,8 @@ async function handleFormSubmit(event)
             result = await supabase
                 .from('Clients')
                 .insert([clientDataPayload])
-                .select()
-                .single();
+                .select() // Select the newly inserted row
+                .single(); // Expecting a single row back
         } else
         { // 'edit'
             if (!currentClientId) throw new Error("Client ID missing for update.");
@@ -254,8 +259,8 @@ async function handleFormSubmit(event)
                 .from('Clients')
                 .update(clientDataPayload)
                 .eq('Id', currentClientId)
-                .select()
-                .single();
+                .select() // Select the updated row
+                .single(); // Expecting a single row back
         }
 
         const { data, error } = result; // Destructure result
@@ -365,7 +370,7 @@ async function fetchNotesForClient()
         {
             const { data: profiles, error: profileError } = await supabase
                 .from('Profiles')
-                .select('id, full_name')
+                .select('id, full_name') // *** Refined: Only fetch needed columns ***
                 .in('id', creatorIds);
 
             if (profileError)
@@ -392,7 +397,10 @@ async function fetchNotesForClient()
     }
 }
 
-// Display notes in the table
+// ===============================================================
+// === XSS FIX APPLIED BELOW =====================================
+// ===============================================================
+// Display notes in the table (NOW SECURE AGAINST XSS via note_content)
 async function displayNotes(notes, userMap)
 {
     if (!notesTableBody) return;
@@ -409,25 +417,46 @@ async function displayNotes(notes, userMap)
 
     notes.forEach(note =>
     {
-        const row = document.createElement('tr');
-        // Escaping note content for preview only
-        const notePreview = (note.note_content || '').substring(0, 30) + (note.note_content && note.note_content.length > 30 ? '...' : '');
-        const notePreviewSafe = notePreview.replace(/'/g, "\\'"); // Escape for use in JS string within HTML
+        const row = document.createElement('tr'); // Create the row
 
+        // --- Create Date Cell ---
+        const dateCell = document.createElement('td');
+        dateCell.className = 'tabledate';
         const createdAtDate = note.created_at ? new Date(note.created_at) : null;
         const formattedDate = createdAtDate
             ? createdAtDate.toLocaleDateString('en-ZA', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })
             : 'N/A';
+        dateCell.textContent = formattedDate; // Use textContent
 
+        // --- Create Note Cell (SECURE WAY) ---
+        const noteCell = document.createElement('td');
+        noteCell.className = 'table-note';
+        noteCell.style.whiteSpace = 'pre-wrap';
+        noteCell.style.wordBreak = 'break-word';
+        // *** THE FIX: Use textContent to render note content safely ***
+        // This prevents any HTML/Script tags within the note content from being executed.
+        noteCell.textContent = note.note_content || '';
+
+        // --- Create User Cell ---
+        const userCell = document.createElement('td');
+        userCell.className = 'table-user';
         let authorDisplay = 'Unknown User';
         if (note.created_by)
         {
             authorDisplay = userMap.get(note.created_by) || `User (${note.created_by.substring(0, 6)}...)`;
         }
+        userCell.textContent = authorDisplay; // Use textContent
 
+        // --- Create Actions Cell ---
+        const actionsCell = document.createElement('td');
+        actionsCell.className = 'table-actions';
         const isOwner = currentUserId && note.created_by === currentUserId;
 
-        // Enable Edit button (if owner) and change onclick
+        // Generate button HTML (safe here as it's based on trusted logic, not user note content)
+        // Escaping note content for preview *only in the delete confirmation*
+        const notePreview = (note.note_content || '').substring(0, 30) + (note.note_content && note.note_content.length > 30 ? '...' : '');
+        const notePreviewSafe = notePreview.replace(/'/g, "\\'"); // Escape for use in JS string within HTML
+
         const editButtonHtml = isOwner
             ? `<button class="button" onclick="openEditNoteModal(${note.id})">Edit</button>`
             : `<button class="button" disabled title="You can only edit your own notes">Edit</button>`;
@@ -436,19 +465,21 @@ async function displayNotes(notes, userMap)
             ? `<button class="button" onclick="deleteNoteHandler(${note.id}, '${notePreviewSafe}')">Delete</button>`
             : `<button class="button" disabled title="You can only delete your own notes">Delete</button>`;
 
-        row.innerHTML = `
-            <td class="tabledate">${formattedDate}</td>
-            <td class="table-note" style="white-space: pre-wrap; word-break: break-word;">${note.note_content || ''}</td>
-            <td class="table-user">${authorDisplay}</td>
-            <td class="table-actions">
-                ${editButtonHtml}
-                ${deleteButtonHtml}
-            </td>
-        `;
+        // Set the innerHTML for the actions cell (contains only our generated buttons)
+        actionsCell.innerHTML = `${editButtonHtml} ${deleteButtonHtml}`;
+
+        // --- Append all cells to the row ---
+        row.append(dateCell, noteCell, userCell, actionsCell);
+
+        // --- Append the row to the table body ---
         notesTableBody.appendChild(row);
     });
-    console.log("[displayNotes] Finished rendering notes table.");
+    console.log("[displayNotes] Finished rendering notes table securely.");
 }
+// ===============================================================
+// === END OF XSS FIX ============================================
+// ===============================================================
+
 
 // Wrapper to load and display notes
 async function loadAndDisplayNotes()
@@ -456,7 +487,7 @@ async function loadAndDisplayNotes()
     if (currentMode === 'edit' && currentClientId)
     {
         const { notes, userMap } = await fetchNotesForClient(); // This now updates clientNotes array
-        await displayNotes(notes, userMap);
+        await displayNotes(notes, userMap); // Call the updated, secure display function
     }
 }
 

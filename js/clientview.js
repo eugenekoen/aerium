@@ -11,6 +11,7 @@ import
 } from './shared.js';
 
 // --- 2. DOM Element References ---
+// Client Details Section DOM Elements
 const clientNameInput = document.getElementById('clientName');
 const contactNameInput = document.getElementById('contactName');
 const emailAddressInput = document.getElementById('emailAddress');
@@ -41,13 +42,12 @@ const newNoteTextarea = document.getElementById('new-note-content');
 const saveNoteButton = document.getElementById('save-note-button');
 const noteStatusSpan = document.getElementById('note-status');
 
-// Modal DOM References
+// Edit Note Modal DOM References
 const editNoteModal = document.getElementById('edit-note-modal');
 const editNoteTextarea = document.getElementById('edit-note-textarea');
 const editingNoteIdInput = document.getElementById('editing-note-id');
 const saveEditedNoteButton = document.getElementById('save-edited-note-button');
 const editNoteStatusSpan = document.getElementById('edit-note-status');
-// *** ADDED references for modal close/cancel buttons ***
 const modalCloseButton = editNoteModal?.querySelector('.modal-close-button');
 const modalCancelButton = editNoteModal?.querySelector('.cancel-button');
 
@@ -477,7 +477,6 @@ function closeEditNoteModal()
     if (saveEditedNoteButton) { saveEditedNoteButton.disabled = false; saveEditedNoteButton.textContent = 'Save Changes'; }
     if (modalCancelButton) { modalCancelButton.disabled = false; } // Use the variable defined at the top
 }
-// *** REMOVED: window.closeEditNoteModal = closeEditNoteModal; *** No longer needed globally
 
 // Save Edited Note Handler
 async function saveEditedNoteHandler()
@@ -514,7 +513,7 @@ async function saveEditedNoteHandler()
         if (modalCancelButton) modalCancelButton.disabled = false;
     }
 }
-// --- END OF NOTES SECTION FUNCTIONS ---
+// --- End of Notes Section Functions ---
 
 
 // --- 5. Initialization ---
@@ -568,8 +567,7 @@ async function initializePage()
     {
         console.error("Save Edited Note button (#save-edited-note-button) not found.");
     }
-
-    // 7. Attach Modal Close/Cancel Button Handlers *** ADDED ***
+    // 7. Attach Modal Close/Cancel Button Handlers
     if (modalCloseButton)
     {
         modalCloseButton.addEventListener('click', closeEditNoteModal);
@@ -584,7 +582,6 @@ async function initializePage()
     {
         console.error("Modal cancel button (.cancel-button) not found.");
     }
-
     // 8. Attach Save New Note Button Handler
     if (saveNoteButton)
     {
@@ -593,8 +590,6 @@ async function initializePage()
     {
         console.error("Save New Note button (#save-note-button) not found.");
     }
-
-
     // 9. Setup Event Delegation for Notes Table Actions
     if (notesTableBody)
     {
@@ -620,8 +615,6 @@ async function initializePage()
     {
         console.error("Notes table body not found for event delegation setup.");
     }
-
-
     // 10. Close modal if user clicks outside of it
     if (editNoteModal)
     {

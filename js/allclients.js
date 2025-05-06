@@ -28,7 +28,6 @@ function navigateToAddClient()
     resetInactivityTimer();
     window.location.href = 'ClientView.html?mode=add';
 }
-// *** REMOVED window.navigateToAddClient = navigateToAddClient; ***
 
 // Edit Client Function
 function editClient(clientId)
@@ -53,7 +52,6 @@ function editClient(clientId)
     console.log(`[editClient] Navigating to: ${editUrl}`);
     window.location.href = editUrl;
 }
-// *** REMOVED window.editClient = editClient; ***
 
 // Delete Client Function
 async function deleteClient(clientId, clientName)
@@ -121,8 +119,6 @@ async function deleteClient(clientId, clientName)
         console.log('Client deletion cancelled by user.');
     }
 }
-// *** REMOVED window.deleteClient = deleteClient; ***
-
 
 // Function to Get Total Count of Clients
 async function getClientCount()
@@ -146,9 +142,6 @@ async function getClientCount()
     }
 }
 
-// ========================================================================
-// === XSS FIX APPLIED in loadClients below ===============================
-// ========================================================================
 // Function to Fetch and Display Clients with Pagination
 async function loadClients()
 {
@@ -205,57 +198,55 @@ async function loadClients()
                 const clientNameSafe = client.ClientName ?? '';
                 const escapedClientName = encodeURIComponent(clientNameSafe); // For data attribute
 
-                // *** START OF SECURE CELL CREATION ***
-
                 // Client Code Cell
                 const clientCodeCell = document.createElement('td');
                 clientCodeCell.style.textAlign = 'center'; // Apply style directly
-                clientCodeCell.textContent = client.ClientCode ?? ''; // Use textContent
+                clientCodeCell.textContent = client.ClientCode ?? '';
                 row.appendChild(clientCodeCell);
 
                 // Client Name Cell
                 const clientNameCell = document.createElement('td');
-                clientNameCell.textContent = clientNameSafe; // Use textContent
+                clientNameCell.textContent = clientNameSafe;
                 row.appendChild(clientNameCell);
 
                 // Contact Name Cell
                 const contactNameCell = document.createElement('td');
-                contactNameCell.textContent = client.ContactName ?? ''; // Use textContent
+                contactNameCell.textContent = client.ContactName ?? '';
                 row.appendChild(contactNameCell);
 
                 // Client Type Cell
                 const clientTypeCell = document.createElement('td');
-                clientTypeCell.textContent = clientTypeName; // Use textContent
+                clientTypeCell.textContent = clientTypeName;
                 row.appendChild(clientTypeCell);
 
                 // Email Address Cell
                 const emailCell = document.createElement('td');
-                emailCell.textContent = client.EmailAddress ?? ''; // Use textContent
+                emailCell.textContent = client.EmailAddress ?? '';
                 row.appendChild(emailCell);
 
                 // Tel Number Cell
                 const telCell = document.createElement('td');
-                telCell.textContent = client.TelNumber ?? ''; // Use textContent
+                telCell.textContent = client.TelNumber ?? '';
                 row.appendChild(telCell);
 
                 // Cell Number Cell
                 const cellCell = document.createElement('td');
-                cellCell.textContent = client.CellNumber ?? ''; // Use textContent
+                cellCell.textContent = client.CellNumber ?? '';
                 row.appendChild(cellCell);
 
                 // Year End Cell
                 const yearEndCell = document.createElement('td');
-                yearEndCell.textContent = yearEndName; // Use textContent
+                yearEndCell.textContent = yearEndName;
                 row.appendChild(yearEndCell);
 
                 // Client Status Cell
                 const statusCell = document.createElement('td');
-                statusCell.textContent = clientStatusName; // Use textContent
+                statusCell.textContent = clientStatusName;
                 row.appendChild(statusCell);
 
                 // Billing Code Cell
                 const billingCodeCell = document.createElement('td');
-                billingCodeCell.textContent = client.BillingCode ?? ''; // Use textContent
+                billingCodeCell.textContent = client.BillingCode ?? '';
                 row.appendChild(billingCodeCell);
 
                 // Actions Cell (Buttons are safe as their content/attributes are controlled)
@@ -275,8 +266,6 @@ async function loadClients()
 
                 row.appendChild(actionsCell);
 
-                // *** END OF SECURE CELL CREATION ***
-
                 tableBody.appendChild(row); // Append the securely built row
             });
         } else if (totalClients === 0)
@@ -289,7 +278,6 @@ async function loadClients()
             {
                 console.log("Current page empty, attempting to go to previous page.");
                 currentPage--;
-                // Consider reloading if page becomes empty after deletion on last page
                 setTimeout(loadClients, 0); // Reload to show previous page
             }
         }
@@ -333,7 +321,7 @@ function updatePaginationControls()
     pageInfo.textContent = `Page ${currentPage} of ${displayTotalPages}`;
     prevPageBtn.disabled = currentPage <= 1;
     nextPageBtn.disabled = currentPage >= displayTotalPages || totalClients === 0;
-    pageSizeSelect.value = pageSize; // Ensure dropdown matches state
+    pageSizeSelect.value = pageSize;
 
     // If page was corrected *and* it wasn't just reset to 1 for an empty table
     if (pageChanged && !(currentPage === 1 && totalClients === 0))

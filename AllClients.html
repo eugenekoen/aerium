@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="css/app.css">
     <!-- Updated Favicon Path -->
     <link rel="shortcut icon" href="assets/app_icon.png" />
-    <!-- *** ADDED CSP META TAG *** -->
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self';
         script-src 'self' https://cdn.jsdelivr.net;
@@ -22,7 +21,9 @@
         base-uri 'self';
         upgrade-insecure-requests;
     ">
+
     <title>Aerium - All Clients</title>
+
     <!-- Include the Supabase JS library via CDN (Keep this here) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -30,7 +31,6 @@
 <body>
     <!-- Sidebar Placeholder (JS will load content here) -->
     <div id="sidebar-placeholder">
-        <!-- Optional: Add a loading indicator -->
         <div
             style="width: 200px; height: 100vh; background-color: #111; color: #818181; display: flex; align-items: center; justify-content: center; position: fixed; top: 0; left: 0;">
             Loading Nav...</div>
@@ -51,7 +51,6 @@
         </div>
 
         <div class="top-buttons-list-view">
-            <!-- *** MODIFIED: Removed onclick, Added id *** -->
             <button class="button" id="add-client-button">Add Client</button>
         </div>
         <table class="client-list-view-table">

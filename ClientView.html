@@ -17,11 +17,11 @@
     base-uri 'self';
     upgrade-insecure-requests;
 ">
-    <!-- Updated CSS Path -->
     <link rel="stylesheet" href="css/app.css">
-    <!-- Updated Favicon Path -->
     <link rel="shortcut icon" href="assets/app_icon.png" />
+
     <title>Client View</title>
+
     <!-- Include the Supabase JS library via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -40,7 +40,6 @@
             <div class="client-view-top-section">
                 <h2>Client Information - Loading...</h2>
 
-                <!-- Use the grid class for better layout -->
                 <form id="client-form" class="client-form-grid">
                     <!-- Column 1 -->
                     <div class="form-column">
@@ -74,8 +73,8 @@
                     <div class="form-column">
                         <div class="form-group">
                             <label class="label-class" for="clientType">Client Type:</label>
-                            <select id="clientType" required> <!-- Keep required if essential -->
-                                <option value="" disabled selected>-- Select Type --</option> <!-- Use disabled -->
+                            <select id="clientType" required>
+                                <option value="" disabled selected>-- Select Type --</option>
                                 <option value="1">Private Company (Pty) Ltd</option>
                                 <option value="2">Close Corporation (CC)</option>
                                 <option value="3">Non-Profit Organisation (NPO)</option>
@@ -120,11 +119,11 @@
                         </div>
                         <div class="form-group">
                             <label class="label-class" for="telNumber">Tel Number:</label>
-                            <input type="tel" id="telNumber" class="input-client-view" /> <!-- Use type=tel -->
+                            <input type="tel" id="telNumber" class="input-client-view" />
                         </div>
                         <div class="form-group">
                             <label class="label-class" for="cellNumber">Cell Number:</label>
-                            <input type="tel" id="cellNumber" class="input-client-view" /> <!-- Use type=tel -->
+                            <input type="tel" id="cellNumber" class="input-client-view" />
                         </div>
                         <div class="form-group">
                             <label class="label-class" for="yearEnd">Year End:</label>
@@ -158,7 +157,6 @@
                         </div>
                     </div>
 
-                    <!-- Buttons spanning across grid columns -->
                     <div class="form-buttons">
                         <button class="button" type="submit">Update Client</button>
                         <button class="button" type="button">Cancel</button>
@@ -172,7 +170,6 @@
                 <div class="add-note-form">
                     <label for="new-note-content">Add New Note:</label>
                     <textarea id="new-note-content" rows="4"></textarea>
-                    <!-- The onclick is now attached in clientview.js -->
                     <button id="save-note-button" class="button">Save Note</button>
                     <span id="note-status"></span>
                 </div>
@@ -203,7 +200,7 @@
             <span class="modal-close-button">×</span>
             <h2>Edit Note</h2>
             <textarea id="edit-note-textarea" rows="6"></textarea>
-            <input type="hidden" id="editing-note-id"> <!-- To store the ID -->
+            <input type="hidden" id="editing-note-id">
             <div class="modal-buttons">
                 <button id="save-edited-note-button" class="button">Save Changes</button>
                 <button type="button" class="button cancel-button">Cancel</button>

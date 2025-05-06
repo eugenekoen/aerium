@@ -1,13 +1,13 @@
 // --- 1. Import Shared Functionality ---
 import
-    {
-        supabase,
-        checkAuthAndRedirect,
-        handleLogout, // Keep for direct use if needed
-        setupInactivityDetection,
-        stopInactivityDetection, // Keep for cleanup
-        loadSidebar
-    } from './shared.js';
+{
+    supabase,
+    checkAuthAndRedirect,
+    handleLogout, // Keep for direct use if needed
+    setupInactivityDetection,
+    stopInactivityDetection, // Keep for cleanup
+    loadSidebar
+} from './shared.js';
 
 // --- 2. DOM Elements ---
 const welcomeMessageElement = document.getElementById('user-welcome-message');

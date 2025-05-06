@@ -48,9 +48,6 @@ if (loginForm)
             {
                 // Login successful! Supabase handles session storage.
                 console.log('Login successful:', data.session?.user?.email);
-                // Redirect is handled by checkLoginAndRedirect on next page load,
-                // but we can force it here too. The check on other pages prevents
-                // accessing them without login.
                 window.location.href = 'index.html';
             }
         } catch (err)

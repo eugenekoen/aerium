@@ -23,8 +23,6 @@ try
 {
     console.error("Error initializing Supabase client:", error);
     alert(`Could not initialize Supabase: ${error.message}. Check console for details.`);
-    // Depending on the app, you might want to stop further execution here
-    // document.body.innerHTML = `<div style="color: red; padding: 20px;">Fatal Error: Could not initialize Supabase.</div>`;
     throw error; // Re-throw to stop script execution if critical
 }
 
@@ -138,7 +136,7 @@ export async function handleLogout(loginPageURL = 'login.html')
 }
 
 // --- 3. Inactivity Logout Logic ---
-const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes
+const INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000; // 10 minutes
 let inactivityTimerId = null; // Initialize to null
 
 // Simple debounce function
@@ -180,7 +178,6 @@ function logoutDueToInactivity()
 // Function to reset the inactivity timer
 export function resetInactivityTimer()
 {
-    // console.log("Activity detected, resetting inactivity timer."); // Uncomment for debugging
     if (inactivityTimerId !== null)
     {
         clearTimeout(inactivityTimerId); // Clear the previous timer if it exists
@@ -260,8 +257,6 @@ export async function loadSidebar(placeholderId = 'sidebar-placeholder', sidebar
     if (!placeholder)
     {
         console.error(`Sidebar placeholder element with ID #${placeholderId} not found.`);
-        // Optionally display an error message in the body
-        // document.body.insertAdjacentHTML('afterbegin', '<p style="color:red;">Error: Sidebar container missing.</p>');
         return;
     }
 

@@ -1,7 +1,11 @@
+<!-- File Name: index.html -->
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
+    <!-- AERIUM Dashboard - Main application entry point -->
+    <!-- Security: CSP prevents XSS attacks -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="
@@ -20,21 +24,23 @@
     <link rel="shortcut icon" href="assets/app_icon.png" />
     <link rel="stylesheet" href="css/app.css">
 
+    <!-- App metadata -->
     <title>Aerium - Home</title>
 
-    <!-- Include the Supabase JS library via CDN -->
+    <!-- External dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
-    <!-- Sidebar Placeholder -->
+    <!-- Navigation loaded dynamically via shared.js -->
+    <!-- Sidebar Placeholder, Loading state shows while sidebar loads -->
     <div id="sidebar-placeholder">
         <div
             style="width: 200px; height: 100vh; background-color: #111; color: #818181; display: flex; align-items: center; justify-content: center; position: fixed; top: 0; left: 0;">
             Loading Nav...</div>
     </div>
 
-    <!-- Main Content Area -->
+    <!-- Main dashboard content -->
     <div class="body">
         <h1 id="user-welcome-message">Loading user info...</h1>
         <p>This is the main dashboard area.</p>

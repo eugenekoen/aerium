@@ -120,29 +120,7 @@ async function deleteClient(clientId, clientName)
     }
 }
 
-// Function to Get Total Count of Clients
-async function getClientCount()
-{
-    try
-    {
-        const { count, error } = await supabase
-            .from('Clients')
-            .select('*', { count: 'exact', head: true });
-
-        if (error)
-        {
-            console.error('Error fetching client count:', error);
-            return 0;
-        }
-        return count ?? 0;
-    } catch (err)
-    {
-        console.error('Unexpected error getting client count:', err);
-        return 0;
-    }
-}
-
-// Function to Fetch and Display Clients with Pagination
+// Function to Fetch and Display Clients with Pagination (Optimized Version)
 async function loadClients()
 {
     if (!tableBody) return;
@@ -153,21 +131,19 @@ async function loadClients()
 
     try
     {
-        totalClients = await getClientCount();
         const offset = (currentPage - 1) * pageSize;
         const maxRange = offset + pageSize - 1;
 
-        // Fetch data (refined select columns)
-        let { data: clients, error } = await supabase
+        let { data: clients, error, count } = await supabase
             .from('Clients')
             .select(`
                 Id, ClientCode, ClientName, ContactName, EmailAddress, TelNumber, CellNumber, BillingCode,
                 ClientTypes ( Name ),
                 ClientStatuses:ClientStatusId ( Name ),
                 YearEnds:YearEndId ( Name )
-            `)
-            .order('ClientName', { ascending: true })
-            .range(offset, maxRange);
+            `, { count: 'exact' }) // Get the total count of all clients
+            .order('ClientName', { ascending: true }) // Your original sorting is preserved
+            .range(offset, maxRange); // Get only the clients for the current page
 
         if (error)
         {
@@ -176,6 +152,9 @@ async function loadClients()
             updatePaginationControls();
             return;
         }
+
+        totalClients = count ?? 0;
+
 
         tableBody.innerHTML = ''; // Clear loading message
 

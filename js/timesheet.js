@@ -1,4 +1,6 @@
-// --- 1. Import Shared Functionality ---
+//File Name: js/timesheet.js
+
+// --- Import Shared Functionality ---
 import {
     supabase,
     checkAuthAndRedirect,
@@ -6,6 +8,7 @@ import {
     loadSidebar,
     resetInactivityTimer
 } from './shared.js';
+
 
 // --- 2. DOM Element References ---
 const currentDateElement = document.getElementById('current-date');
@@ -185,10 +188,6 @@ function generateRowId() {
     return 'row_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 }
 
-function getDateKey(date) {
-    return date.toISOString().split('T')[0];
-}
-
 function showMessage(message, type = 'success') {
     const messageDiv = document.createElement('div');
     messageDiv.className = type === 'success' ? 'success-message' : 'error-message';
@@ -219,22 +218,131 @@ function saveTimesheetData() {
     console.log('Timesheet data saved for', dateKey);
 }
 
-function loadTimesheetData() {
-    const dateKey = getDateKey(currentDate);
-    const stored = localStorage.getItem(`timesheet_${dateKey}`);
+// function loadTimesheetData() {
+//     const dateKey = getDateKey(currentDate);
+//     const stored = localStorage.getItem(`timesheet_${dateKey}`);
 
-    if (stored) {
-        const data = JSON.parse(stored);
-        currentDayType = data.dayType || 'work-day';
-        isDayLocked = data.isLocked || false;
-        timesheetData = data.entries || [];
-        leaveData = data.leave || { type: '', hours: 0 };
-        console.log('Timesheet data loaded for', dateKey);
-    } else {
-        // Start with 7 blank rows
+//     if (stored) {
+//         const data = JSON.parse(stored);
+//         currentDayType = data.dayType || 'work-day';
+//         isDayLocked = data.isLocked || false;
+//         timesheetData = data.entries || [];
+//         leaveData = data.leave || { type: '', hours: 0 };
+//         console.log('Timesheet data loaded for', dateKey);
+//     } else {
+//         // Start with 7 blank rows
+//         generateBlankRows();
+//         console.log('Generated 7 blank rows for', dateKey);
+//     }
+// }
+
+async function loadTimesheetData() {
+    try {
+        // Get current user session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError || !session) {
+            console.error('No authenticated user found:', sessionError);
+            generateBlankRows();
+            return;
+        }
+
+        const userId = session.user.id;
+        const dateKey = getDateKey(currentDate);
+
+        console.log(`Loading timesheet data for user ${userId} on ${dateKey}`);
+
+        console.log('Supabase query SQL equivalent:', `
+SELECT 
+    entry_id, te.client_id, date, time_start, time_end, hours, te.task_id, te.description, status, c.client_name, t.task_name
+FROM timesheet_entries te
+LEFT JOIN "Clients" c ON te.client_id = c."Id"
+LEFT JOIN tasks t ON te.task_id = t.task_id
+WHERE te.user_id = '${userId}' AND te.date = '${dateKey}'
+ORDER BY te.time_start ASC NULLS LAST;
+`);
+
+        // Query timesheet entries for the current date and user
+        const { data: entries, error } = await supabase
+    .from('timesheet_entries')
+    .select(`
+        entry_id,
+        client_id,
+        date,
+        time_start,
+        time_end,
+        hours,
+        task_id,
+        description,
+        status,
+        Clients!timesheet_entries_client_id_fkey (
+            client_name
+        ),
+        tasks!timesheet_entries_task_id_fkey (
+            task_name
+        )
+    `)
+    .eq('user_id', userId)
+    .eq('date', dateKey)
+    .order('time_start', { ascending: true, nullsFirst: false });
+
+        if (error) {
+            console.error('Error loading timesheet data:', error);
+            generateBlankRows();
+            return;
+        }
+
+        if (entries && entries.length > 0) {
+            // Transform database entries to match your frontend format
+            timesheetData = entries.map(entry => ({
+                id: entry.entry_id,
+                timeStart: entry.time_start ? formatTimeForInput(entry.time_start) : '',
+                timeEnd: entry.time_end ? formatTimeForInput(entry.time_end) : '',
+                client: entry.Clients?.client_name || '',
+                clientId: entry.client_id,
+                task: entry.tasks?.task_name || '',
+                taskId: entry.task_id,
+                categoryId: entry.category_id,
+                description: entry.description || '',
+                hours: entry.hours ? parseFloat(entry.hours).toFixed(2) : '',
+                status: entry.status || 'open',
+                isLocked: entry.status === 'locked' || entry.status === 'approved'
+            }));
+
+            // Set day type and lock status based on entries
+            // You might want to store this separately or derive it from entries
+            currentDayType = 'work-day'; // Default, adjust based on your logic
+            isDayLocked = timesheetData.some(entry => entry.isLocked);
+
+            console.log(`Loaded ${entries.length} timesheet entries for ${dateKey}`);
+        } else {
+            // No entries found, generate blank rows
+            generateBlankRows();
+            console.log(`No timesheet entries found for ${dateKey}, generated blank rows`);
+        }
+
+        // Update the UI
+        renderTimesheet();
+
+    } catch (err) {
+        console.error('Unexpected error loading timesheet data:', err);
         generateBlankRows();
-        console.log('Generated 7 blank rows for', dateKey);
     }
+}
+
+// Helper function to format time from database (HH:MM:SS) to input format (HH:MM)
+function formatTimeForInput(timeString) {
+    if (!timeString) return '';
+    // timeString might be in format "HH:MM:SS" or "HH:MM"
+    return timeString.substring(0, 5); // Take first 5 characters (HH:MM)
+}
+
+// Helper function to get date in YYYY-MM-DD format for database queries
+function getDateKey(date) {
+    if (!date) return new Date().toISOString().split('T')[0];
+    if (date instanceof Date) {
+        return date.toISOString().split('T')[0];
+    }
+    return date; // Assume it's already in correct format
 }
 
 function generateBlankRows() {

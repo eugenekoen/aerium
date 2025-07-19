@@ -56,7 +56,7 @@ function editClient(clientId)
 }
 
 // Delete Client Function
-async function deleteClient(clientId, clientName)
+async function deleteClient(clientId, client_name)
 {
     resetInactivityTimer();
     // Convert clientId to number just in case it came from dataset as string
@@ -68,9 +68,9 @@ async function deleteClient(clientId, clientName)
         return;
     }
     // Use the provided name, fallback if it's somehow missing/undefined
-    const safeClientName = clientName || `Client ID ${id}`;
+    const safeclient_name = client_name || `Client ID ${id}`;
 
-    if (confirm(`Are you sure you want to delete client: ${safeClientName}? \n\nTHIS ACTION CANNOT BE UNDONE.`))
+    if (confirm(`Are you sure you want to delete client: ${safeclient_name}? \n\nTHIS ACTION CANNOT BE UNDONE.`))
     {
         console.log(`Attempting to delete client with ID: ${id}`);
         // Find button using data attributes now
@@ -94,7 +94,7 @@ async function deleteClient(clientId, clientName)
             if (error)
             {
                 console.error('Error deleting client:', error);
-                alert(`Failed to delete client "${safeClientName}": ${error.message}`);
+                alert(`Failed to delete client "${safeclient_name}": ${error.message}`);
                 if (deleteButton)
                 {
                     deleteButton.disabled = false;
@@ -102,8 +102,8 @@ async function deleteClient(clientId, clientName)
                 }
             } else
             {
-                console.log(`Client ID: ${id} (${safeClientName}) deleted successfully.`);
-                alert(`Client "${safeClientName}" deleted successfully.`);
+                console.log(`Client ID: ${id} (${safeclient_name}) deleted successfully.`);
+                alert(`Client "${safeclient_name}" deleted successfully.`);
                 await loadClients(); // Reload data
             }
         } catch (err)
@@ -139,12 +139,12 @@ async function loadClients()
         let { data: clients, error, count } = await supabase
             .from('Clients')
             .select(`
-                Id, ClientCode, ClientName, ContactName, EmailAddress, TelNumber, CellNumber, BillingCode,
+                Id, ClientCode, client_name, ContactName, EmailAddress, TelNumber, CellNumber, BillingCode,
                 ClientTypes ( Name ),
                 ClientStatuses:ClientStatusId ( Name ),
                 YearEnds:YearEndId ( Name )
             `, { count: 'exact' }) // Get the total count of all clients
-            .order('ClientName', { ascending: true }) // Your original sorting is preserved
+            .order('client_name', { ascending: true }) // Your original sorting is preserved
             .range(offset, maxRange); // Get only the clients for the current page
 
         if (error)
@@ -176,8 +176,8 @@ async function loadClients()
                 const clientTypeName = client.ClientTypes?.Name ?? 'N/A';
                 const clientStatusName = client.ClientStatuses?.Name ?? 'N/A';
                 const yearEndName = client.YearEnds?.Name ?? 'N/A';
-                const clientNameSafe = client.ClientName ?? '';
-                const escapedClientName = encodeURIComponent(clientNameSafe); // For data attribute
+                const client_nameSafe = client.client_name ?? '';
+                const escapedclient_name = encodeURIComponent(client_nameSafe); // For data attribute
 
                 // Client Code Cell
                 const clientCodeCell = document.createElement('td');
@@ -186,9 +186,9 @@ async function loadClients()
                 row.appendChild(clientCodeCell);
 
                 // Client Name Cell
-                const clientNameCell = document.createElement('td');
-                clientNameCell.textContent = clientNameSafe;
-                row.appendChild(clientNameCell);
+                const client_nameCell = document.createElement('td');
+                client_nameCell.textContent = client_nameSafe;
+                row.appendChild(client_nameCell);
 
                 // Contact Name Cell
                 const contactNameCell = document.createElement('td');
@@ -241,7 +241,7 @@ async function loadClients()
                 const deleteButton = document.createElement('button');
                 deleteButton.className = 'button delete-button';
                 deleteButton.dataset.clientId = client.Id;
-                deleteButton.dataset.clientName = escapedClientName; // Data attribute is safe
+                deleteButton.dataset.client_name = escapedclient_name; // Data attribute is safe
                 deleteButton.textContent = 'Delete'; // Button text is safe
                 actionsCell.appendChild(deleteButton);
 
@@ -399,12 +399,12 @@ function setupActionListeners()
                 resetInactivityTimer(); // Reset on action
                 const clientId = target.dataset.clientId;
                 // Decode the name from data attribute
-                const encodedClientName = target.dataset.clientName;
-                const clientName = encodedClientName ? decodeURIComponent(encodedClientName) : null;
+                const encodedclient_name = target.dataset.client_name;
+                const client_name = encodedclient_name ? decodeURIComponent(encodedclient_name) : null;
 
                 if (clientId)
                 {
-                    deleteClient(clientId, clientName); // Pass name too
+                    deleteClient(clientId, client_name); // Pass name too
                 } else
                 {
                     console.error("Delete button clicked, but client ID not found in data attribute.");

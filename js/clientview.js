@@ -14,7 +14,7 @@ import
 
 // --- 2. DOM Element References ---
 // Client Details Section DOM Elements
-const clientNameInput = document.getElementById('clientName');
+const client_nameInput = document.getElementById('client_name');
 const contactNameInput = document.getElementById('contactName');
 const emailAddressInput = document.getElementById('emailAddress');
 const addressTextarea = document.getElementById('address');
@@ -87,10 +87,10 @@ function setPageTitle(client)
     if (typeof client === 'string')
     {
         pageTitleElement.textContent = client;
-    } else if (client && client.ClientName)
+    } else if (client && client.client_name)
     {
         const codePart = client.ClientCode ? ` (${client.ClientCode})` : '';
-        pageTitleElement.textContent = `Client Information - ${client.ClientName}${codePart}`;
+        pageTitleElement.textContent = `Client Information - ${client.client_name}${codePart}`;
     } else
     {
         pageTitleElement.textContent = "Client Information";
@@ -115,7 +115,7 @@ async function fetchClientData(clientId)
         const { data: client, error } = await supabase
             .from('Clients')
             .select(`
-                Id, ClientName, ContactName, EmailAddress, Address, BillingCode, ClientCode,
+                Id, client_name, ContactName, EmailAddress, Address, BillingCode, ClientCode,
                 ClientTypeId, CkIdNumber, VatNumber, PayeNumber, UifNumber, SdlNumber,
                 TaxNumber, WcaNumber, TelNumber, CellNumber, YearEndId, ClientStatusId
             `)
@@ -157,7 +157,7 @@ function populateForm(client)
     }
     setPageTitle(client);
     const setValue = (element, value) => { if (element) element.value = value ?? ''; };
-    setValue(clientNameInput, client.ClientName);
+    setValue(client_nameInput, client.client_name);
     setValue(contactNameInput, client.ContactName);
     setValue(emailAddressInput, client.EmailAddress);
     setValue(addressTextarea, client.Address);
@@ -186,7 +186,7 @@ async function handleFormSubmit(event)
     if (!submitButton) return;
     const confirmMessage = currentMode === 'add'
         ? "Are you sure you want to add this new client?"
-        : `Are you sure you want to update the details for ${clientNameInput?.value?.trim() || 'this client'}?`;
+        : `Are you sure you want to update the details for ${client_nameInput?.value?.trim() || 'this client'}?`;
     if (!confirm(confirmMessage))
     {
         console.log(`Client ${currentMode} cancelled by user.`);
@@ -198,7 +198,7 @@ async function handleFormSubmit(event)
     submitButton.disabled = true;
     if (cancelButton) cancelButton.disabled = true;
     const clientDataPayload = {
-        ClientName: clientNameInput?.value?.trim() || null,
+        client_name: client_nameInput?.value?.trim() || null,
         ContactName: contactNameInput?.value?.trim() || null,
         EmailAddress: emailAddressInput?.value?.trim() || null,
         Address: addressTextarea?.value?.trim() || null,
@@ -217,7 +217,7 @@ async function handleFormSubmit(event)
         YearEndId: parseInt(yearEndSelect?.value) || null,
         ClientStatusId: parseInt(clientStatusSelect?.value) || null,
     };
-    if (!clientDataPayload.ClientName)
+    if (!clientDataPayload.client_name)
     {
         alert('Client Name is required.');
         submitButton.textContent = originalButtonText;

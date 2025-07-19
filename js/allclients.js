@@ -1,3 +1,5 @@
+// File: js/appState.js
+
 // --- 1. Import Shared Functionality ---
 import
 {

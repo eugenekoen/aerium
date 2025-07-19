@@ -1,11 +1,33 @@
-<div class="sidenav">
-    <!-- Link to index.html for static hosting -->
-    <a class="sidenav-profile" href="index.html">Home</a>
-    <!-- Make this link active or styled differently if desired -->
-    <a href="AllClients.html">Clients</a>
 
-    <div class="sidenav-bottom">
-        <!-- The onclick will be attached by loadSidebar() in shared.js -->
-        <a href="#" id="logout-link">Logout</a>
+<body>
+    <div class="sidenav">
+        <!-- Logo Section -->
+        <div class="sidenav-logo">
+            <div class="logo-container">
+                <div class="logo-icon">A</div>
+                <div class="logo-text">Aerium</div>
+            </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <a class="sidenav-profile active" href="index.html">
+            <span class="nav-icon">🏠</span>
+            Home
+        </a>
+        <a href="AllClients.html">
+            <span class="nav-icon">👥</span>
+            Clients
+        </a>
+        <a href="timesheet.html">
+            <span class="nav-icon">⏰</span>
+            Timesheet
+        </a>
+
+        <div class="sidenav-bottom">
+            <a href="#" id="logout-link">
+                <span class="nav-icon">🚪</span>
+                Logout
+            </a>
+        </div>
     </div>
-</div>
+</body>

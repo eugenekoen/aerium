@@ -1,4 +1,4 @@
-/* css/app.css */
+/* File Name: css/app.css */
 
 /* ... (keep all your existing styles) ... */
 
@@ -35,79 +35,6 @@ a {
 
 /* GLOBAL */
 
-
-
-/* NAVBAR  */
-
-.sidenav {
-    height: 100%;
-    width: 200px;
-    position: fixed;
-    z-index: 1;
-    top: 0;
-    left: 0;
-    background-color: #111;
-    overflow-x: hidden;
-    display: flex;
-    /* Use flexbox for vertical alignment */
-    flex-direction: column;
-    /* Stack items vertically */
-}
-
-/* Remove fixed bottom positioning, let flexbox handle it */
-.sidenav-bottom {
-    /* width: inherit; */
-    /* position: absolute; */
-    /* bottom: 10px; */
-    margin-top: auto;
-    /* Push to the bottom */
-    padding-bottom: 10px;
-    /* Add some space at the very bottom */
-}
-
-
-.sidenav-profile {
-    /* height: 100px; */
-    /* Adjust as needed or remove */
-    /* align-content: center; */
-    /* Not needed with flex */
-    padding-top: 20px;
-    /* Example padding */
-    padding-bottom: 20px;
-    /* Example padding */
-}
-
-.sidenav a {
-    padding: 10px 15px 10px 32px;
-    /* Adjusted padding */
-    text-decoration: none;
-    font-size: 20px;
-    /* Slightly smaller */
-    color: #818181;
-    display: block;
-    font-family: "Roboto", sans-serif;
-    font-weight: 400;
-    transition: background-color 0.2s ease, color 0.2s ease;
-    /* Smooth transitions */
-}
-
-.sidenav a:hover {
-    color: #f1f1f1;
-    background-color: #333;
-    /* Darker hover */
-}
-
-/* Style for the active link */
-.sidenav a.active {
-    background-color: #1c90c9;
-    /* Highlight color */
-    color: white;
-    font-weight: 500;
-    /* Make active link slightly bolder */
-}
-
-
-/* NAVBAR */
 
 /* BODY CLASS - MARGIN LEFT TO SHOW CONTENT */
 

@@ -1,4 +1,4 @@
-# AERIUM - Client Management System
+# AERIUM - Client Management System (readme)
 
 ## What This App Does
 AERIUM is a secure web application for managing client information. It features:

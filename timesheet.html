@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Updated CSS Path -->
+    <link rel="stylesheet" href="css/app.css">
+    <link rel="stylesheet" href="css/sidebar.css">
+    <link rel="stylesheet" href="css/timesheet.css">
+    <!-- Updated Favicon Path -->
+    <link rel="shortcut icon" href="assets/app_icon.png" />
+    <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self' https://cdn.jsdelivr.net;
+    style-src 'self' 'unsafe-inline';
+    img-src 'self' data: https://rezjbpyicdasqlhldwok.supabase.co;
+    connect-src 'self' https://rezjbpyicdasqlhldwok.supabase.co wss://rezjbpyicdasqlhldwok.supabase.co;
+    font-src 'self';
+    object-src 'none';
+    frame-ancestors 'none';
+    form-action 'self';
+    base-uri 'self';
+    upgrade-insecure-requests;
+    ">
+
+    <title>Aerium - Timesheet</title>
+
+    <!-- Include the Supabase JS library via CDN (Keep this here) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+    <!-- Sidebar Placeholder (JS will load content here) -->
+    <div id="sidebar-placeholder">
+        <div style="width: 200px; height: 100vh; background-color: #111; color: #818181; display: flex; align-items: center; justify-content: center; position: fixed; top: 0; left: 0;">
+            Loading Nav...
+        </div>
+    </div>
+
+    <!-- Main Timesheet Container -->
+    <div class="timesheet-container">
+
+        <!-- Message Container -->
+        <div id="message-container" style="position: fixed; top: 20px; right: 20px; z-index: 1002;"></div>
+
+        <!-- Timesheet Header -->
+        <div class="timesheet-header">
+            <h1>Daily Timesheet</h1>
+
+            <!-- Navigation Controls -->
+            <div class="timesheet-nav">
+                <div class="date-navigation">
+                    <button class="nav-button" id="prev-day">← Previous Day</button>
+                    <div class="date-display" id="current-date">Loading...</div>
+                    <button class="nav-button" id="next-day">Next Day →</button>
+                </div>
+                <div class="view-controls">
+                    <button class="nav-button" id="today-button">Today</button>
+                    <button class="calendar-toggle" id="calendar-toggle">📅 View Calendar</button>
+                </div>
+            </div>
+
+            <!-- Day Status -->
+            <div class="day-status-section">
+                <div class="day-label">
+                    <span>Day Type:</span>
+                    <span class="day-type" id="day-type-display">WORK DAY</span>
+                    <select class="day-type-select" id="day-type-select">
+                        <option value="work-day">Work Day</option>
+                        <option value="weekend">Weekend</option>
+                        <option value="public-holiday">Public Holiday</option>
+                        <option value="annual-leave">Annual Leave</option>
+                        <option value="study-leave">Study Leave</option>
+                    </select>
+                </div>
+
+                <div class="day-controls">
+                    <div class="hours-summary">
+                        <div class="hours-item work-hours" id="work-hours">Work: 0.00h</div>
+                        <div class="hours-item leave-hours" id="leave-hours">Leave: 0.00h</div>
+                        <div class="hours-item total-hours" id="total-hours">Total: 0.00 / 7.5h</div>
+                    </div>
+
+                    <div class="day-actions">
+                        <button class="leave-button" id="manage-leave">🏖️ Manage Leave</button>
+                        <button class="lock-button" id="unlock-day" style="display: none;">🔓 Unlock Day</button>
+                        <button class="lock-button" id="lock-day">🔒 Lock Day</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Month Calendar (Hidden by default) -->
+            <div class="month-calendar" id="month-calendar">
+                <div class="calendar-header">
+                    <button class="nav-button" id="prev-month">←</button>
+                    <h3 id="calendar-month-year">Loading...</h3>
+                    <button class="nav-button" id="next-month">→</button>
+                </div>
+                <div class="calendar-grid" id="calendar-grid">
+                    <!-- Calendar days will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Timesheet Main Area -->
+        <div class="timesheet-main">
+            <!-- Timesheet Table -->
+            <div class="timesheet-table-container">
+                <table class="timesheet-table" id="timesheet-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 80px;">Time Start</th>
+                            <th style="width: 80px;">Time End</th>
+                            <th style="width: 160px;">Client</th>
+                            <th style="width: 200px;">Task</th>
+                            <th style="width: 250px;">Description</th>
+                            <th style="width: 80px;">Hours</th>
+                            <th style="width: 80px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="timesheet-tbody">
+                        <!-- Timesheet rows will be populated by JavaScript -->
+                    </tbody>
+                </table>
+
+                <!-- Add Row Button -->
+                <div style="padding: 15px; text-align: center; border-top: 1px solid #e9ecef;">
+                    <button class="nav-button" id="add-row-button">+ Add Time Entry</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendar Modal -->
+    <div class="calendar-modal" id="calendar-modal">
+        <div class="calendar-content">
+            <div class="calendar-header">
+                <h2>📅 Monthly Calendar</h2>
+                <button class="calendar-close" id="calendar-close">&times;</button>
+            </div>
+
+            <div class="calendar-nav">
+                <button class="nav-button" id="prev-month-modal">←</button>
+                <div class="calendar-month" id="calendar-month-modal">Loading...</div>
+                <button class="nav-button" id="next-month-modal">→</button>
+            </div>
+
+            <div class="calendar-grid" id="calendar-grid-modal">
+                <!-- Calendar grid will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Leave Management Modal -->
+    <div class="leave-modal" id="leave-modal">
+        <div class="leave-modal-content">
+            <div class="leave-modal-header">
+                <h2>🏖️ Manage Leave</h2>
+                <button class="leave-modal-close" id="leave-modal-close">&times;</button>
+            </div>
+
+            <div class="leave-form">
+                <div class="leave-form-group">
+                    <label for="leave-type">Leave Type:</label>
+                    <select id="leave-type" class="leave-type-select">
+                        <option value="">No Leave</option>
+                        <option value="annual-leave">Annual Leave</option>
+                        <option value="sick-leave">Sick Leave</option>
+                        <option value="study-leave">Study Leave</option>
+                        <option value="compassionate-leave">Compassionate Leave</option>
+                        <option value="maternity-leave">Maternity Leave</option>
+                        <option value="paternity-leave">Paternity Leave</option>
+                        <option value="unpaid-leave">Unpaid Leave</option>
+                    </select>
+                </div>
+
+                <div class="leave-form-group">
+                    <label for="leave-hours">Leave Hours:</label>
+                    <input type="text" id="leave-hours" class="leave-hours-input" 
+                           placeholder="0.00" maxlength="5">
+                    <small style="color: #666; font-size: 12px;">
+                        Format: XX.XX (e.g., 7.50 for full day, 3.75 for half day)
+                    </small>
+                </div>
+
+                <div class="leave-form-buttons">
+                    <button id="leave-clear" class="leave-clear-button">🗑️ Clear Leave</button>
+                    <button id="leave-cancel" class="leave-cancel-button">✖️ Cancel</button>
+                    <button id="leave-save" class="leave-save-button">💾 Save Leave</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add New Task Modal -->
+    <div class="task-modal" id="task-modal">
+        <div class="task-modal-content">
+            <div class="task-modal-header">
+                <h2>➕ Add New Task</h2>
+                <button class="task-modal-close" id="task-modal-close">&times;</button>
+            </div>
+
+            <div class="task-form-placeholder">
+                <div style="text-align: center; padding: 40px;">
+                    <div style="font-size: 48px; color: #ccc; margin-bottom: 20px;">🔧</div>
+                    <p>Task management functionality will be implemented here.</p>
+                    <p>This will allow you to add custom tasks to the dropdown list.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Updated JS Path & Added type="module" -->
+    <script type="module" src="js/timesheet.js" defer></script>
+
+</body>
+
+</html>

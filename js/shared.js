@@ -1,3 +1,7 @@
+//File Name: js/shared.js
+
+import { AppState } from './appState.js';
+
 // --- 1. Supabase Initialization (Singleton Pattern) ---
 const SUPABASE_URL = 'https://rezjbpyicdasqlhldwok.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlempicHlpY2Rhc3FsaGxkd29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA2NTUwNzUsImV4cCI6MjA1NjIzMTA3NX0.o9ZN3Q7-2ijrDrry5XP3SEqOS8PKqoHF-W-LGYmtswg';
@@ -115,6 +119,7 @@ export async function handleLogout(loginPageURL = 'login.html')
 
     try
     {
+        AppState.clearUser();
         const { error } = await supabase.auth.signOut();
         if (error)
         {
@@ -322,3 +327,4 @@ window.addEventListener('beforeunload', () =>
     console.log("beforeunload event triggered. Stopping inactivity detection.");
     stopInactivityDetection(); // Ensure timer/listeners are cleaned up
 });
+

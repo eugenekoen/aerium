@@ -5,12 +5,56 @@ export const AppState = {
     user: null,
     session: null,
     
-    // Initialize user data (call once)
+    // Load from localStorage on initialization
+    _loadFromStorage() {
+        try {
+            const storedUser = localStorage.getItem('appState_user');
+            const storedSession = localStorage.getItem('appState_session');
+            
+            if (storedUser) this.user = JSON.parse(storedUser);
+            if (storedSession) this.session = JSON.parse(storedSession);
+        } catch (error) {
+            console.error('Error loading from localStorage:', error);
+            this._clearStorage();
+        }
+    },
+    
+    // Save to localStorage
+    _saveToStorage() {
+        try {
+            if (this.user) {
+                localStorage.setItem('appState_user', JSON.stringify(this.user));
+            }
+            if (this.session) {
+                localStorage.setItem('appState_session', JSON.stringify(this.session));
+            }
+        } catch (error) {
+            console.error('Error saving to localStorage:', error);
+        }
+    },
+    
+    // Clear localStorage
+    _clearStorage() {
+        localStorage.removeItem('appState_user');
+        localStorage.removeItem('appState_session');
+    },
+    
+    // Initialize user data (call once per page load)
     async initializeUser() {
-        if (this.user) return this.user; // Already loaded
+        // First, try to load from storage
+        this._loadFromStorage();
         
+        if (this.user && this.session) {
+            console.log('User loaded from storage:', this.user);
+            return this.user; // Return cached data
+        }
+        
+        // If not in storage, fetch from Supabase
         this.session = await checkAuthAndRedirect();
-        if (!this.session) return null;
+        if (!this.session) {
+            this._clearStorage();
+            return null;
+        }
         
         console.log(`Fetching profile for user ID: ${this.session.user.id}`);
         
@@ -23,7 +67,6 @@ export const AppState = {
                 
             if (error) {
                 console.error('Error fetching user profile:', error);
-                // Fallback to email
                 this.user = {
                     id: this.session.user.id,
                     email: this.session.user.email,
@@ -37,17 +80,24 @@ export const AppState = {
                 };
             }
             
-            console.log('User state loaded:', this.user);
+            // Save to storage after successful fetch
+            this._saveToStorage();
+            
+            console.log('User state loaded and cached:', this.user);
             return this.user;
             
         } catch (err) {
             console.error('Unexpected error fetching user data:', err);
+            this._clearStorage();
             return null;
         }
     },
     
     // Get user data (no database call)
     getUser() {
+        if (!this.user) {
+            this._loadFromStorage();
+        }
         return this.user;
     },
     
@@ -55,5 +105,6 @@ export const AppState = {
     clearUser() {
         this.user = null;
         this.session = null;
+        this._clearStorage();
     }
 };

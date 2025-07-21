@@ -467,7 +467,7 @@ function createTimeEntryRow(entry) {
         <td>
             <div class="client-search-container">
                 <input type="text" class="client-input" 
-                       value="${entry.client || ''}" 
+                       value="${entry.client_name || ''}" 
                        placeholder="Search client..." 
                        ${isLocked ? 'disabled' : ''}
                        data-field="client"

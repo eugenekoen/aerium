@@ -1,5 +1,3 @@
-<!-- File Name: timesheet.html -->
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -65,27 +63,15 @@
 
             <!-- Day Status -->
             <div class="day-status-section">
-                <div class="day-label">
-                    <span>Day Type:</span>
-                    <span class="day-type" id="day-type-display">WORK DAY</span>
-                    <select class="day-type-select" id="day-type-select">
-                        <option value="work-day">Work Day</option>
-                        <option value="weekend">Weekend</option>
-                        <option value="public-holiday">Public Holiday</option>
-                        <option value="annual-leave">Annual Leave</option>
-                        <option value="study-leave">Study Leave</option>
-                    </select>
-                </div>
-
                 <div class="day-controls">
                     <div class="hours-summary">
                         <div class="hours-item work-hours" id="work-hours">Work: 0.00h</div>
                         <div class="hours-item leave-hours" id="leave-hours">Leave: 0.00h</div>
-                        <div class="hours-item total-hours" id="total-hours">Total: 0.00 / 7.5h</div>
                     </div>
 
                     <div class="day-actions">
                         <button class="leave-button" id="manage-leave">🏖️ Manage Leave</button>
+                        <button class="nav-button" id="save-all">💾 Save All</button>
                         <button class="lock-button" id="unlock-day" style="display: none;">🔓 Unlock Day</button>
                         <button class="lock-button" id="lock-day">🔒 Lock Day</button>
                     </div>
@@ -112,13 +98,15 @@
                 <table class="timesheet-table" id="timesheet-table">
                     <thead>
                         <tr>
-                            <th style="width: 80px;">Time Start</th>
-                            <th style="width: 80px;">Time End</th>
+                            <th style="width: 40px;">Start</th>
+                            <th style="width: 40px;">End</th>
                             <th style="width: 160px;">Client</th>
                             <th style="width: 200px;">Task</th>
-                            <th style="width: 250px;">Description</th>
+                            <th style="width: 180px;">Description</th>
+                            <th style="width: 60px;">TC</th>
                             <th style="width: 80px;">Hours</th>
-                            <th style="width: 80px;">Actions</th>
+                            <th style="width: 80px;">Status</th>
+                            <th style="width: 100px;">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="timesheet-tbody">
@@ -164,6 +152,20 @@
 
             <div class="leave-form">
                 <div class="leave-form-group">
+                    <label>Leave Duration:</label>
+                    <div class="leave-duration-controls">
+                        <label class="radio-label">
+                            <input type="radio" name="leave-duration" value="full" id="leave-full-day" checked>
+                            Full Day (7.5 hours)
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="leave-duration" value="partial" id="leave-partial-day">
+                            Partial Day
+                        </label>
+                    </div>
+                </div>
+
+                <div class="leave-form-group">
                     <label for="leave-type">Leave Type:</label>
                     <select id="leave-type" class="leave-type-select">
                         <option value="">No Leave</option>
@@ -177,7 +179,7 @@
                     </select>
                 </div>
 
-                <div class="leave-form-group">
+                <div class="leave-form-group" id="leave-hours-group" style="display: none;">
                     <label for="leave-hours">Leave Hours:</label>
                     <input type="text" id="leave-hours" class="leave-hours-input" 
                            placeholder="0.00" maxlength="5">

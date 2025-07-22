@@ -1,5 +1,3 @@
-//File Name: js/timesheet.js
-
 // --- Import Shared Functionality ---
 import {
     supabase,
@@ -16,15 +14,13 @@ const prevDayButton = document.getElementById('prev-day');
 const nextDayButton = document.getElementById('next-day');
 const todayButton = document.getElementById('today-button');
 const toggleCalendarButton = document.getElementById('calendar-toggle');
-const dayTypeDisplay = document.getElementById('day-type-display');
-const dayTypeSelect = document.getElementById('day-type-select');
 const unlockDayButton = document.getElementById('unlock-day');
 const lockDayButton = document.getElementById('lock-day');
 const workHoursElement = document.getElementById('work-hours');
 const leaveHoursElement = document.getElementById('leave-hours');
-const totalHoursElement = document.getElementById('total-hours');
 const timesheetTbody = document.getElementById('timesheet-tbody');
 const addRowButton = document.getElementById('add-row-button');
+const saveAllButton = document.getElementById('save-all');
 
 // Calendar elements
 const monthCalendar = document.getElementById('month-calendar');
@@ -43,6 +39,9 @@ const leaveModalClose = document.getElementById('leave-modal-close');
 const manageLeaveButton = document.getElementById('manage-leave');
 const leaveTypeSelect = document.getElementById('leave-type');
 const leaveHoursInput = document.getElementById('leave-hours');
+const leaveHoursGroup = document.getElementById('leave-hours-group');
+const leaveFullDay = document.getElementById('leave-full-day');
+const leavePartialDay = document.getElementById('leave-partial-day');
 const leaveSaveButton = document.getElementById('leave-save');
 const leaveCancelButton = document.getElementById('leave-cancel');
 const leaveClearButton = document.getElementById('leave-clear');
@@ -85,6 +84,18 @@ const dummyTasks = [
     'Consulting - Unassigned',
     'Admin - General',
     'Admin - Training'
+];
+
+// --- NEW: Training Contract Categories ---
+const trainingContractCategories = [
+    { code: 'N/A', description: 'Not Applicable' },
+    { code: 'A', description: 'A - Strategy & Governance to create sustainable value' },
+    { code: 'B', description: 'B - Stewardship of capitals, business processes and risk management' },
+    { code: 'C', description: 'C - Decision-making to increase, decrease or transform capitals' },
+    { code: 'D', description: 'D - Reporting on Value Creation' },
+    { code: 'E', description: 'E - Compliance' },
+    { code: 'F', description: 'F - Assurance & Related Services' },
+    { code: 'NC', description: 'Non-Core' }
 ];
 
 // --- 5. Utility Functions ---
@@ -203,6 +214,23 @@ function showMessage(message, type = 'success') {
     }
 }
 
+function getEntryStatus(entry) {
+    // Check if entry is valid
+    if (!entry.timeStart && !entry.timeEnd && !entry.client && !entry.task && !entry.description && !entry.hours) {
+        return 'Saved'; // Empty rows are considered saved
+    }
+
+    // Check for invalid data
+    if ((entry.timeStart && !isValidTime(entry.timeStart)) ||
+        (entry.timeEnd && !isValidTime(entry.timeEnd)) ||
+        (entry.hours && (isNaN(parseFloat(entry.hours)) || parseFloat(entry.hours) < 0))) {
+        return 'Invalid';
+    }
+
+    // Check if saved (simplified - in real app would check against database)
+    return entry.isSaved ? 'Saved' : 'Unsaved';
+}
+
 // --- 6. Storage Functions (Simulating Database) ---
 function saveTimesheetData() {
     const dateKey = getDateKey(currentDate);
@@ -217,24 +245,6 @@ function saveTimesheetData() {
     localStorage.setItem(`timesheet_${dateKey}`, JSON.stringify(data));
     console.log('Timesheet data saved for', dateKey);
 }
-
-// function loadTimesheetData() {
-//     const dateKey = getDateKey(currentDate);
-//     const stored = localStorage.getItem(`timesheet_${dateKey}`);
-
-//     if (stored) {
-//         const data = JSON.parse(stored);
-//         currentDayType = data.dayType || 'work-day';
-//         isDayLocked = data.isLocked || false;
-//         timesheetData = data.entries || [];
-//         leaveData = data.leave || { type: '', hours: 0 };
-//         console.log('Timesheet data loaded for', dateKey);
-//     } else {
-//         // Start with 7 blank rows
-//         generateBlankRows();
-//         console.log('Generated 7 blank rows for', dateKey);
-//     }
-// }
 
 async function loadTimesheetData() {
     try {
@@ -263,8 +273,8 @@ ORDER BY te.time_start ASC NULLS LAST;
 
         // Query timesheet entries for the current date and user
         const { data: entries, error } = await supabase
-    .from('timesheet_entries')
-    .select(`
+            .from('timesheet_entries')
+            .select(`
         entry_id,
         client_id,
         date,
@@ -274,6 +284,7 @@ ORDER BY te.time_start ASC NULLS LAST;
         task_id,
         description,
         status,
+        tc_category,
         Clients!timesheet_entries_client_id_fkey (
             client_name
         ),
@@ -281,9 +292,9 @@ ORDER BY te.time_start ASC NULLS LAST;
             task_name
         )
     `)
-    .eq('user_id', userId)
-    .eq('date', dateKey)
-    .order('time_start', { ascending: true, nullsFirst: false });
+            .eq('user_id', userId)
+            .eq('date', dateKey)
+            .order('time_start', { ascending: true, nullsFirst: false });
 
         if (error) {
             console.error('Error loading timesheet data:', error);
@@ -304,8 +315,10 @@ ORDER BY te.time_start ASC NULLS LAST;
                 categoryId: entry.category_id,
                 description: entry.description || '',
                 hours: entry.hours ? parseFloat(entry.hours).toFixed(2) : '',
+                tcCategory: entry.tc_category || 'N/A', // NEW: TC Category
                 status: entry.status || 'open',
-                isLocked: entry.status === 'locked' || entry.status === 'approved'
+                isLocked: entry.status === 'locked' || entry.status === 'approved',
+                isSaved: true
             }));
 
             // Set day type and lock status based on entries
@@ -367,7 +380,9 @@ function generateBlankRows() {
             task: '',
             description: '',
             hours: '',
-            isLocked: false
+            tcCategory: 'N/A', // NEW: Default TC Category
+            isLocked: false,
+            isSaved: true
         };
         timesheetData.push(entry);
     }
@@ -382,17 +397,6 @@ function generateBlankRows() {
 function updateDateDisplay() {
     if (currentDateElement) {
         currentDateElement.textContent = formatDate(currentDate);
-    }
-}
-
-function updateDayTypeDisplay() {
-    if (dayTypeDisplay) {
-        dayTypeDisplay.textContent = currentDayType.replace('-', ' ').toUpperCase();
-        dayTypeDisplay.className = `day-type ${currentDayType}`;
-    }
-
-    if (dayTypeSelect) {
-        dayTypeSelect.value = currentDayType;
     }
 }
 
@@ -422,18 +426,12 @@ function updateHoursSummary() {
         }
     });
 
-    const totalHours = workHours + leaveHours;
-
     if (workHoursElement) {
         workHoursElement.textContent = `Work: ${workHours.toFixed(2)}h`;
     }
 
     if (leaveHoursElement) {
         leaveHoursElement.textContent = `Leave: ${leaveHours.toFixed(2)}h`;
-    }
-
-    if (totalHoursElement) {
-        totalHoursElement.textContent = `Total: ${totalHours.toFixed(2)} / 7.5h`;
     }
 }
 
@@ -442,10 +440,16 @@ function createTimeEntryRow(entry) {
     row.dataset.rowId = entry.id;
 
     const isLocked = isDayLocked || entry.isLocked || (currentDayType !== 'work-day' && currentDayType !== 'study-leave');
+    const status = getEntryStatus(entry);
 
     if (isLocked) {
         row.classList.add('locked-row');
     }
+
+    // Generate TC options for the dropdown
+    const tcOptions = trainingContractCategories.map(cat =>
+        `<option value="${cat.code}" ${entry.tcCategory === cat.code ? 'selected' : ''}>${cat.description}</option>`
+    ).join('');
 
     row.innerHTML = `
         <td>
@@ -486,8 +490,15 @@ function createTimeEntryRow(entry) {
             <textarea class="description-input" 
                       placeholder="Work description..." 
                       ${isLocked ? 'disabled' : ''}
-                      data-field="description">${entry.description || ''}</textarea>
+                      data-field="description" style="height: 17px;">${entry.description || ''}</textarea>
         </td>
+        <td style="position: relative;">
+    <select class="tc-select" ${isLocked ? 'disabled' : ''} data-field="tcCategory" 
+            data-selected-code="${entry.tcCategory || 'N/A'}" 
+            title="Training Contract Category">
+        ${tcOptions}
+    </select>
+</td>
         <td>
             <input type="text" class="hours-input" 
                    value="${entry.hours || ''}" 
@@ -497,6 +508,10 @@ function createTimeEntryRow(entry) {
                    maxlength="5">
         </td>
         <td>
+            <span class="status-indicator status-${status.toLowerCase()}">${status}</span>
+        </td>
+        <td>
+            <button class="save-row-button action-button" ${isLocked ? 'disabled' : ''} title="Save entry">Save</button>
             <button class="delete-row-button action-button" ${isLocked ? 'disabled' : ''} title="Delete entry">Delete</button>
         </td>
     `;
@@ -590,7 +605,6 @@ function renderInlineCalendar() {
             currentDate = new Date(date);
             loadTimesheetData();
             updateDateDisplay();
-            updateDayTypeDisplay();
             updateDayControls();
             renderTimesheet();
             toggleCalendar(); // Close calendar after selection
@@ -641,8 +655,17 @@ function openLeaveModal() {
     if (leaveTypeSelect) {
         leaveTypeSelect.value = leaveData.type || '';
     }
-    if (leaveHoursInput) {
-        leaveHoursInput.value = leaveData.hours ? leaveData.hours.toFixed(2) : '';
+
+    // Set leave duration based on current hours
+    if (leaveData.hours === 7.5 || leaveData.hours === 0) {
+        leaveFullDay.checked = true;
+        leaveHoursGroup.style.display = 'none';
+    } else {
+        leavePartialDay.checked = true;
+        leaveHoursGroup.style.display = 'block';
+        if (leaveHoursInput) {
+            leaveHoursInput.value = leaveData.hours ? leaveData.hours.toFixed(2) : '';
+        }
     }
 
     if (leaveModal) {
@@ -656,16 +679,30 @@ function closeLeaveModal() {
     }
 }
 
+function handleLeaveDurationChange() {
+    if (leavePartialDay.checked) {
+        leaveHoursGroup.style.display = 'block';
+    } else {
+        leaveHoursGroup.style.display = 'none';
+    }
+}
+
 function handleLeaveSave() {
     resetInactivityTimer();
 
     const leaveType = leaveTypeSelect ? leaveTypeSelect.value : '';
-    const leaveHours = leaveHoursInput ? parseFloat(leaveHoursInput.value) || 0 : 0;
+    let leaveHours = 0;
 
-    // Validate hours
-    if (leaveType && (leaveHours <= 0 || leaveHours > 99.99)) {
-        showMessage('Please enter valid leave hours (0.01 - 99.99)', 'error');
-        return;
+    if (leaveType) {
+        if (leaveFullDay.checked) {
+            leaveHours = 7.5;
+        } else {
+            leaveHours = leaveHoursInput ? parseFloat(leaveHoursInput.value) || 0 : 0;
+            if (leaveHours <= 0 || leaveHours > 99.99) {
+                showMessage('Please enter valid leave hours (0.01 - 99.99)', 'error');
+                return;
+            }
+        }
     }
 
     // Update leave data
@@ -693,6 +730,8 @@ function handleLeaveClear() {
 
         if (leaveTypeSelect) leaveTypeSelect.value = '';
         if (leaveHoursInput) leaveHoursInput.value = '';
+        leaveFullDay.checked = true;
+        leaveHoursGroup.style.display = 'none';
 
         updateHoursSummary();
         saveTimesheetData();
@@ -718,7 +757,6 @@ function handleDateNavigation(direction) {
 
     loadTimesheetData();
     updateDateDisplay();
-    updateDayTypeDisplay();
     updateDayControls();
     renderTimesheet();
 
@@ -732,40 +770,10 @@ function goToToday() {
     currentDate = new Date();
     loadTimesheetData();
     updateDateDisplay();
-    updateDayTypeDisplay();
     updateDayControls();
     renderTimesheet();
 
     showMessage('Navigated to today');
-}
-
-function handleDayTypeChange() {
-    resetInactivityTimer();
-    const oldDayType = currentDayType;
-    currentDayType = dayTypeSelect.value;
-
-    // Auto-set leave if changing to a leave day type
-    if (currentDayType === 'annual-leave' || currentDayType === 'study-leave') {
-        if (leaveData.hours === 0) {
-            leaveData = {
-                type: currentDayType,
-                hours: 7.5
-            };
-        }
-    } else if (oldDayType === 'annual-leave' || oldDayType === 'study-leave') {
-        // Clear leave if changing away from leave day
-        if (leaveData.type === oldDayType) {
-            leaveData = { type: '', hours: 0 };
-        }
-    }
-
-    updateDayTypeDisplay();
-    updateDayControls();
-    updateHoursSummary();
-    renderTimesheet(); // Re-render to apply locking rules
-    saveTimesheetData();
-
-    showMessage(`Day type changed to ${currentDayType.replace('-', ' ')}`);
 }
 
 function handleDayLock() {
@@ -788,7 +796,9 @@ function handleAddRow() {
         task: '',
         description: '',
         hours: '',
-        isLocked: false
+        tcCategory: 'N/A', // NEW: Default TC Category
+        isLocked: false,
+        isSaved: false
     };
 
     timesheetData.push(newEntry);
@@ -805,6 +815,48 @@ function handleAddRow() {
     showMessage('New time entry added');
 }
 
+function handleSaveRow(rowId) {
+    resetInactivityTimer();
+    const entry = timesheetData.find(e => e.id === rowId);
+    if (!entry) return;
+
+    const status = getEntryStatus(entry);
+    if (status === 'Invalid') {
+        showMessage('Cannot save invalid entry. Please check your data.', 'error');
+        return;
+    }
+
+    entry.isSaved = true;
+    renderTimesheet();
+    saveTimesheetData();
+    showMessage('Entry saved successfully');
+}
+
+function handleSaveAll() {
+    resetInactivityTimer();
+    let savedCount = 0;
+    let invalidCount = 0;
+
+    timesheetData.forEach(entry => {
+        const status = getEntryStatus(entry);
+        if (status === 'Invalid') {
+            invalidCount++;
+        } else if (status === 'Unsaved') {
+            entry.isSaved = true;
+            savedCount++;
+        }
+    });
+
+    renderTimesheet();
+    saveTimesheetData();
+
+    if (invalidCount > 0) {
+        showMessage(`Saved ${savedCount} entries. ${invalidCount} invalid entries not saved.`, 'error');
+    } else {
+        showMessage(`All entries saved successfully (${savedCount} entries)`);
+    }
+}
+
 function handleDeleteRow(rowId) {
     resetInactivityTimer();
     timesheetData = timesheetData.filter(entry => entry.id !== rowId);
@@ -819,6 +871,7 @@ function handleCellChange(rowId, field, value) {
     if (!entry) return;
 
     entry[field] = value;
+    entry.isSaved = false; // Mark as unsaved when changed
 
     // Calculate hours if both times are filled
     if (field === 'timeStart' || field === 'timeEnd') {
@@ -839,6 +892,26 @@ function handleCellChange(rowId, field, value) {
         if (hoursInput) {
             hoursInput.classList.remove('calculated');
         }
+    }
+
+    // NEW: Handle TC Category changes
+    if (field === 'tcCategory') {
+        const tcSelect = document.querySelector(`tr[data-row-id="${rowId}"] .tc-select`);
+        if (tcSelect) {
+            // Find the selected category to show a brief confirmation
+            const selectedCategory = trainingContractCategories.find(cat => cat.code === value);
+            if (selectedCategory && value !== 'N/A') {
+                showMessage(`TC Category set to: ${selectedCategory.code}`, 'success');
+            }
+        }
+    }
+
+    // Update status indicator
+    const statusElement = document.querySelector(`tr[data-row-id="${rowId}"] .status-indicator`);
+    if (statusElement) {
+        const status = getEntryStatus(entry);
+        statusElement.textContent = status;
+        statusElement.className = `status-indicator status-${status.toLowerCase()}`;
     }
 
     updateHoursSummary();
@@ -986,11 +1059,6 @@ function attachEventListeners() {
         nextMonthButton.addEventListener('click', () => navigateMonth(1));
     }
 
-    // Day type change
-    if (dayTypeSelect) {
-        dayTypeSelect.addEventListener('change', handleDayTypeChange);
-    }
-
     // Day locking
     if (unlockDayButton) {
         unlockDayButton.addEventListener('click', handleDayLock);
@@ -999,9 +1067,12 @@ function attachEventListeners() {
         lockDayButton.addEventListener('click', handleDayLock);
     }
 
-    // Add row
+    // Add row and save all
     if (addRowButton) {
         addRowButton.addEventListener('click', handleAddRow);
+    }
+    if (saveAllButton) {
+        saveAllButton.addEventListener('click', handleSaveAll);
     }
 
     // Leave management
@@ -1019,6 +1090,14 @@ function attachEventListeners() {
     }
     if (leaveClearButton) {
         leaveClearButton.addEventListener('click', handleLeaveClear);
+    }
+
+    // Leave duration radio buttons
+    if (leaveFullDay) {
+        leaveFullDay.addEventListener('change', handleLeaveDurationChange);
+    }
+    if (leavePartialDay) {
+        leavePartialDay.addEventListener('change', handleLeaveDurationChange);
     }
 
     // Leave hours input formatting
@@ -1048,6 +1127,11 @@ function attachEventListeners() {
                 }
             }
 
+            if (e.target.classList.contains('save-row-button')) {
+                const rowId = e.target.closest('tr').dataset.rowId;
+                handleSaveRow(rowId);
+            }
+
             if (e.target.classList.contains('add-task-button')) {
                 openTaskModal();
             }
@@ -1073,14 +1157,19 @@ function attachEventListeners() {
         });
 
         timesheetTbody.addEventListener('change', (e) => {
-            const rowId = e.target.closest('tr').dataset.rowId;
-            const field = e.target.dataset.field;
-            const value = e.target.value;
+    const rowId = e.target.closest('tr').dataset.rowId;
+    const field = e.target.dataset.field;
+    const value = e.target.value;
 
-            if (rowId && field) {
-                handleCellChange(rowId, field, value);
-            }
-        });
+    if (rowId && field) {
+        handleCellChange(rowId, field, value);
+        
+        // Update TC display if it's a TC category change
+        if (field === 'tcCategory') {
+            updateTCDisplay(e.target);
+        }
+    }
+});
 
         // Client search keyboard navigation
         timesheetTbody.addEventListener('keydown', (e) => {
@@ -1139,7 +1228,6 @@ async function initializePage() {
 
         // 4. Update UI
         updateDateDisplay();
-        updateDayTypeDisplay();
         updateDayControls();
         renderTimesheet();
 
@@ -1171,3 +1259,16 @@ document.addEventListener('DOMContentLoaded', initializePage);
 window.addEventListener('beforeunload', () => {
     saveTimesheetData();
 });
+
+
+// Add this function after the existing utility functions
+function updateTCDisplay(selectElement) {
+    const selectedValue = selectElement.value || 'N/A';
+    selectElement.setAttribute('data-selected-code', selectedValue);
+    
+    // Find the category to update title with full description
+    const selectedCategory = trainingContractCategories.find(cat => cat.code === selectedValue);
+    if (selectedCategory) {
+        selectElement.title = selectedCategory.description;
+    }
+}

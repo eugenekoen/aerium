@@ -1,3 +1,6 @@
+/* File Name: css/clientView.css */
+
+
 /* Reset and base styles matching app.css theme */
 * {
     margin: 0;
@@ -694,4 +697,276 @@ body {
     left: 0;
     z-index: 100;
     font-family: "Roboto", sans-serif;
+}
+
+/* ===== TASKS TAB STYLES ===== */
+
+/* Tasks header */
+.tasks-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e0e4e7;
+}
+
+.tasks-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.tasks-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-primary {
+    background: #1c90c9;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-family: "Roboto", sans-serif;
+}
+
+.btn-primary:hover {
+    background: #527a7a;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(28, 144, 201, 0.3);
+}
+
+.btn-secondary.active {
+    background: #527a7a;
+    box-shadow: 0 2px 8px rgba(82, 122, 122, 0.3);
+}
+
+/* Tasks table */
+.tasks-table-container {
+    overflow-x: auto;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    background: white;
+    border: 1px solid #e0e4e7;
+}
+
+.tasks-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    font-size: 13px;
+}
+
+.tasks-table th {
+    background: #d2d6d7; /* Match your existing table header color */
+    color: #333;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 1px solid #e0e4e7;
+    font-size: 13px;
+}
+
+.tasks-table td {
+    padding: 12px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+}
+
+.tasks-table tbody tr:hover {
+    background: rgba(28, 144, 201, 0.05);
+}
+
+.tasks-table tr.inactive-task {
+    opacity: 0.7;
+    background: rgba(0,0,0,0.02);
+}
+
+.tasks-table tr.inactive-task:hover {
+    background: rgba(28, 144, 201, 0.03);
+}
+
+/* Status badges */
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+    display: inline-block;
+}
+
+.status-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-inactive {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Action buttons */
+.action-buttons {
+    display: flex;
+    gap: 4px;
+}
+
+.btn-action {
+    padding: 4px 8px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    font-family: "Roboto", sans-serif;
+}
+
+.btn-bill {
+    background: #28a745;
+    color: white;
+}
+
+.btn-bill:hover {
+    background: #218838;
+}
+
+.btn-view {
+    background: #1c90c9;
+    color: white;
+}
+
+.btn-view:hover {
+    background: #527a7a;
+}
+
+.btn-delete {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-delete:hover {
+    background: #c82333;
+}
+
+.btn-delete:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+}
+
+/* Task Detail Modal */
+.task-modal-content {
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-actions {
+    text-align: center;
+    margin: 20px 0;
+    padding: 15px 0;
+    border-top: 1px solid #e0e4e7;
+    border-bottom: 1px solid #e0e4e7;
+}
+
+/* Time Ledger */
+.time-ledger {
+    margin-top: 20px;
+}
+
+.ledger-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.ledger-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 16px;
+}
+
+.ledger-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.ledger-table-container {
+    overflow-x: auto;
+    border-radius: 6px;
+    border: 1px solid #e0e4e7;
+}
+
+.ledger-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.ledger-table th,
+.ledger-table td {
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.ledger-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #555;
+}
+
+.ledger-table tbody tr:hover {
+    background: rgba(28, 144, 201, 0.05);
+}
+
+.ledger-total {
+    background: #f8f9fa;
+    font-weight: 600;
+}
+
+/* Utility classes */
+.hidden {
+    display: none !important;
+}
+
+/* Responsive adjustments for tasks */
+@media (max-width: 768px) {
+    .tasks-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        gap: 2px;
+    }
+    
+    .tasks-table,
+    .ledger-table {
+        font-size: 11px;
+    }
+    
+    .tasks-table th,
+    .tasks-table td,
+    .ledger-table th,
+    .ledger-table td {
+        padding: 8px;
+    }
+    
+    .task-modal-content {
+        width: 95%;
+        margin: 5% auto;
+    }
 }

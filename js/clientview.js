@@ -18,6 +18,9 @@ let autosaveInterval = null;
 let searchTimeout = null;
 let originalFormData = {}; // Store original form data for comparison
 
+// Track whether inactive tasks are showing
+let showingInactive = false;
+
 // --- 3. DOM Element References ---
 // Client Details Section DOM Elements
 const clientForm = document.getElementById('client-form');
@@ -131,6 +134,11 @@ async function loadTabContent(tabId) {
         case 'notes':
             if (currentMode === 'edit' && currentClientId) {
                 await loadAndDisplayNotes();
+            }
+            break;
+        case 'tasks':
+            if (currentMode === 'edit' && currentClientId) {
+                loadTasks();
             }
             break;
         case 'details':
@@ -473,7 +481,7 @@ async function handleFormSubmit(event) {
     }
 }
 
-// --- 10. Notes Functionality (Updated) ---
+// --- 10. Notes Functionality ---
 async function loadAndDisplayNotes() {
     if (!currentClientId) return;
   
@@ -578,31 +586,6 @@ function createNoteElement(note, userMap) {
     return noteDiv;
 }
 
-// Make functions global for onclick handlers
-window.openEditNoteModal = function(noteId) {
-    const note = clientNotes.find(n => n.id === noteId);
-    if (!note) return;
-  
-    if (editNoteTextarea) editNoteTextarea.value = note.note_content || '';
-    if (editingNoteIdInput) editingNoteIdInput.value = noteId;
-    if (editNoteStatusSpan) editNoteStatusSpan.textContent = '';
-    if (editNoteModal) editNoteModal.style.display = 'block';
-};
-
-window.deleteNote = async function(noteId, preview) {
-    if (!confirm(`Are you sure you want to delete this note?\n\n"${preview}..."`)) return;
-  
-    try {
-        const { error } = await supabase.from('Notes').delete().eq('id', noteId);
-        if (error) throw error;
-      
-        await loadAndDisplayNotes();
-    } catch (error) {
-        console.error('Delete error:', error);
-        alert(`Failed to delete note: ${error.message}`);
-    }
-};
-
 async function saveNewNote() {
     const content = newNoteTextarea?.value?.trim();
     if (!content || !currentClientId) return;
@@ -648,7 +631,130 @@ async function saveNewNote() {
     }
 }
 
-// --- 11. Additional Contacts (Placeholder) ---
+// --- 11. Tasks Functionality ---
+function toggleInactiveTasks() {
+    const inactiveTasks = document.querySelectorAll('.inactive-task');
+    const toggleBtn = document.getElementById('toggleInactiveBtn');
+    
+    showingInactive = !showingInactive;
+    
+    if (showingInactive) {
+        // Show inactive tasks
+        inactiveTasks.forEach(task => {
+            task.classList.remove('hidden');
+        });
+        toggleBtn.innerHTML = '<i class="fas fa-eye-slash"></i> Hide Inactive';
+        toggleBtn.classList.add('active');
+    } else {
+        // Hide inactive tasks
+        inactiveTasks.forEach(task => {
+            task.classList.add('hidden');
+        });
+        toggleBtn.innerHTML = '<i class="fas fa-eye"></i> Show Inactive';
+        toggleBtn.classList.remove('active');
+    }
+}
+
+function loadTasks() {
+    console.log('Loading tasks for client:', currentClientId);
+    // Implementation would load tasks from Supabase here
+    // For now, this is handled by the static HTML
+}
+
+function addNewTask() {
+    console.log('Opening new task form');
+    // Implementation for adding new task
+    alert('Add Task functionality will be implemented with your Supabase integration.');
+}
+
+function refreshTasks() {
+    console.log('Refreshing tasks');
+    loadTasks();
+    // You can add a visual refresh indicator here
+    const refreshBtn = event.target;
+    const originalText = refreshBtn.innerHTML;
+    refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+    
+    setTimeout(() => {
+        refreshBtn.innerHTML = originalText;
+    }, 1000);
+}
+
+function billTask(taskId) {
+    console.log('Billing task:', taskId);
+    // Implementation for billing a task
+    alert('Bill Task functionality will be implemented with your billing system.');
+}
+
+function viewTask(taskId) {
+    console.log('Viewing task:', taskId);
+    
+    // Sample task data - replace with actual data loading from Supabase
+    const taskData = {
+        taskName: 'Annual Financial Statements',
+        category: 'AFS',
+        period: '2024',
+        status: 'Active',
+        description: 'Preparation of annual financial statements for the year ending February 2024'
+    };
+    
+    // Populate modal
+    document.getElementById('modalTaskName').value = taskData.taskName;
+    document.getElementById('modalTaskCategory').value = taskData.category;
+    document.getElementById('modalTaskPeriod').value = taskData.period;
+    document.getElementById('modalTaskStatus').value = taskData.status;
+    document.getElementById('modalTaskDescription').value = taskData.description;
+    document.getElementById('taskModalTitle').textContent = 'Task: ' + taskData.taskName;
+    
+    // Show modal
+    document.getElementById('taskModal').style.display = 'block';
+}
+
+function deleteTask(taskId) {
+    if (confirm('Are you sure you want to delete this task? This action cannot be undone.')) {
+        console.log('Deleting task:', taskId);
+        // Implementation for deleting a task
+        alert('Delete Task functionality will be implemented with your Supabase integration.');
+    }
+}
+
+function closeTaskModal() {
+    document.getElementById('taskModal').style.display = 'none';
+}
+
+function billCurrentTask() {
+    console.log('Billing current task from modal');
+    // Implementation for billing from task detail view
+    alert('Billing functionality will be integrated with your billing system.');
+}
+
+function linkUnassignedTimes() {
+    console.log('Opening link times dialog');
+    // Implementation for linking unassigned times
+    alert('Link Times functionality will be implemented with your timesheet system.');
+}
+
+function refreshTimeLedger() {
+    console.log('Refreshing time ledger');
+    // Implementation for refreshing time ledger
+    const refreshBtn = event.target;
+    const originalText = refreshBtn.innerHTML;
+    refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+    
+    setTimeout(() => {
+        refreshBtn.innerHTML = originalText;
+    }, 1000);
+}
+
+function unlinkTime(timeId) {
+    if (confirm('Are you sure you want to unlink this time entry?')) {
+        console.log('Unlinking time:', timeId);
+        // Implementation for unlinking time
+        alert('Unlink Time functionality will be implemented with your timesheet system.');
+    }
+}
+
+// --- 12. Additional Contacts (Placeholder) ---
 function initializeAdditionalContacts() {
     if (addContactBtn) {
         addContactBtn.addEventListener('click', () => {
@@ -659,7 +765,7 @@ function initializeAdditionalContacts() {
     }
 }
 
-// --- 12. Modal Management ---
+// --- 13. Modal Management ---
 function initializeModals() {
     // Close modals when clicking outside or on close button
     const modals = document.querySelectorAll('.modal');
@@ -693,6 +799,14 @@ function initializeModals() {
     if (saveEditedNoteButton) {
         saveEditedNoteButton.addEventListener('click', saveEditedNote);
     }
+
+    // Make sure the task modal closes when clicking outside
+    window.addEventListener('click', function(event) {
+        const taskModal = document.getElementById('taskModal');
+        if (event.target === taskModal) {
+            closeTaskModal();
+        }
+    });
 }
 
 async function saveEditedNote() {
@@ -736,10 +850,7 @@ async function saveEditedNote() {
     }
 }
 
-// --- 13. Initialization ---
-// Add this to your existing clientview.js file or replace the initialization section
-
-// Update the header save button handler
+// --- 14. Header Save Button ---
 function initializeHeaderSaveButton() {
     const headerSaveBtn = document.getElementById('header-save-btn');
     if (headerSaveBtn) {
@@ -747,7 +858,7 @@ function initializeHeaderSaveButton() {
     }
 }
 
-// Update your initializePage function to include this:
+// --- 15. Initialization ---
 async function initializePage() {
     try {
         // Load sidebar
@@ -764,7 +875,8 @@ async function initializePage() {
         initializeTabs();
         initializeClientSearch();
         initializeModals();
-        initializeHeaderSaveButton(); // Add this line
+        initializeHeaderSaveButton();
+        initializeTaskEventListeners();
       
         // Setup form handling
         if (clientForm) {
@@ -796,7 +908,46 @@ async function initializePage() {
     }
 }
 
-// --- 14. Cleanup ---
+// --- 16. Global Function Assignments (for onclick handlers) ---
+// Make functions global for onclick handlers
+window.openEditNoteModal = function(noteId) {
+    const note = clientNotes.find(n => n.id === noteId);
+    if (!note) return;
+  
+    if (editNoteTextarea) editNoteTextarea.value = note.note_content || '';
+    if (editingNoteIdInput) editingNoteIdInput.value = noteId;
+    if (editNoteStatusSpan) editNoteStatusSpan.textContent = '';
+    if (editNoteModal) editNoteModal.style.display = 'block';
+};
+
+window.deleteNote = async function(noteId, preview) {
+    if (!confirm(`Are you sure you want to delete this note?\n\n"${preview}..."`)) return;
+  
+    try {
+        const { error } = await supabase.from('Notes').delete().eq('id', noteId);
+        if (error) throw error;
+      
+        await loadAndDisplayNotes();
+    } catch (error) {
+        console.error('Delete error:', error);
+        alert(`Failed to delete note: ${error.message}`);
+    }
+};
+
+// Task functions
+window.toggleInactiveTasks = toggleInactiveTasks;
+window.addNewTask = addNewTask;
+window.refreshTasks = refreshTasks;
+window.billTask = billTask;
+window.viewTask = viewTask;
+window.deleteTask = deleteTask;
+window.closeTaskModal = closeTaskModal;
+window.billCurrentTask = billCurrentTask;
+window.linkUnassignedTimes = linkUnassignedTimes;
+window.refreshTimeLedger = refreshTimeLedger;
+window.unlinkTime = unlinkTime;
+
+// --- 17. Cleanup ---
 window.addEventListener('beforeunload', () => {
     if (autosaveInterval) {
         clearInterval(autosaveInterval);
@@ -806,5 +957,83 @@ window.addEventListener('beforeunload', () => {
     }
 });
 
-// --- 15. Event Listeners ---
+// --- 18. Event Listeners ---
 document.addEventListener('DOMContentLoaded', initializePage);
+
+// Add this function to handle task-related event listeners
+function initializeTaskEventListeners() {
+    // Add New Task button
+    const addTaskBtn = document.querySelector('button[onclick="addNewTask()"]');
+    if (addTaskBtn) {
+        addTaskBtn.removeAttribute('onclick');
+        addTaskBtn.addEventListener('click', addNewTask);
+    }
+
+    // Refresh Tasks button  
+    const refreshBtn = document.querySelector('button[onclick="refreshTasks()"]');
+    if (refreshBtn) {
+        refreshBtn.removeAttribute('onclick');
+        refreshBtn.addEventListener('click', refreshTasks);
+    }
+
+    // Toggle Inactive button
+    const toggleBtn = document.getElementById('toggleInactiveBtn');
+    if (toggleBtn) {
+        toggleBtn.removeAttribute('onclick');
+        toggleBtn.addEventListener('click', toggleInactiveTasks);
+    }
+
+    // Task action buttons (bill, view, delete)
+    document.addEventListener('click', function(e) {
+        if (e.target.matches('.btn-bill')) {
+            const taskId = e.target.closest('tr').dataset.taskId || 'task1';
+            billTask(taskId);
+        }
+        
+        if (e.target.matches('.btn-view')) {
+            const taskId = e.target.closest('tr').dataset.taskId || 'task1';
+            viewTask(taskId);
+        }
+        
+        if (e.target.matches('.btn-delete')) {
+            const taskId = e.target.closest('tr').dataset.taskId || 'task1';
+            deleteTask(taskId);
+        }
+    });
+
+    // Modal close button
+    const modalCloseBtn = document.querySelector('#taskModal .modal-close-button');
+    if (modalCloseBtn) {
+        modalCloseBtn.removeAttribute('onclick');
+        modalCloseBtn.addEventListener('click', closeTaskModal);
+    }
+
+    // Bill current task button
+    const billCurrentBtn = document.querySelector('button[onclick="billCurrentTask()"]');
+    if (billCurrentBtn) {
+        billCurrentBtn.removeAttribute('onclick');
+        billCurrentBtn.addEventListener('click', billCurrentTask);
+    }
+
+    // Link unassigned times button
+    const linkTimesBtn = document.querySelector('button[onclick="linkUnassignedTimes()"]');
+    if (linkTimesBtn) {
+        linkTimesBtn.removeAttribute('onclick');
+        linkTimesBtn.addEventListener('click', linkUnassignedTimes);
+    }
+
+    // Refresh time ledger button
+    const refreshLedgerBtn = document.querySelector('button[onclick="refreshTimeLedger()"]');
+    if (refreshLedgerBtn) {
+        refreshLedgerBtn.removeAttribute('onclick');
+        refreshLedgerBtn.addEventListener('click', refreshTimeLedger);
+    }
+
+    // Unlink time buttons
+    document.addEventListener('click', function(e) {
+        if (e.target.matches('.btn-action.btn-delete') && e.target.textContent.includes('Unlink')) {
+            const timeId = e.target.dataset.timeId || 'time1';
+            unlinkTime(timeId);
+        }
+    });
+}

@@ -1,5 +1,10 @@
+<!-- File Name: clientView.html -->
+
+
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,12 +24,12 @@
     <link rel="stylesheet" href="css/sidebar.css">
     <link rel="stylesheet" href="css/clientView.css">
     <link rel="shortcut icon" href="assets/app_icon.png" />
-    
+
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <title>Client View</title>
-    
+
     <!-- Include the Supabase JS library via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -32,7 +37,8 @@
 <body>
     <!-- Sidebar Placeholder -->
     <div id="sidebar-placeholder">
-        <div style="width: 200px; height: 100vh; background-color: #111; color: #818181; display: flex; align-items: center; justify-content: center; position: fixed; top: 0; left: 0;">
+        <div
+            style="width: 200px; height: 100vh; background-color: #111; color: #818181; display: flex; align-items: center; justify-content: center; position: fixed; top: 0; left: 0;">
             Loading Nav...
         </div>
     </div>
@@ -102,7 +108,7 @@
                 <!-- Client Details Tab -->
                 <div class="tab-pane active" id="details-tab">
                     <h2 class="section-title">Client Information</h2>
-                    
+
                     <form id="client-form">
                         <div class="form-grid">
                             <!-- Row 1 -->
@@ -110,17 +116,17 @@
                                 <label for="client_name">Client Name *</label>
                                 <input type="text" id="client_name" name="client_name" required>
                             </div>
-                            
+
                             <div class="form-group">
                                 <label for="ContactName">Contact Name</label>
                                 <input type="text" id="ContactName" name="ContactName">
                             </div>
-                            
+
                             <div class="form-group">
                                 <label for="EmailAddress">Email Address</label>
                                 <input type="email" id="EmailAddress" name="EmailAddress">
                             </div>
-                            
+
                             <div class="form-group">
                                 <label for="ClientTypeId">Client Type</label>
                                 <select id="ClientTypeId" name="ClientTypeId">
@@ -135,65 +141,65 @@
                                     <option value="8">Personal Tax</option>
                                 </select>
                             </div>
-                            
+
                             <!-- Row 2 -->
                             <div class="form-group">
                                 <label for="ClientCode">Client Code</label>
                                 <input type="text" id="ClientCode" name="ClientCode" maxlength="5">
                             </div>
-                            
+
                             <div class="form-group">
                                 <label for="BillingCode">Billing Code</label>
                                 <input type="text" id="BillingCode" name="BillingCode" maxlength="8">
                             </div>
-                            
+
                             <div class="form-group">
                                 <label for="TelNumber">Telephone</label>
                                 <input type="tel" id="TelNumber" name="TelNumber">
                             </div>
-                            
+
                             <div class="form-group">
                                 <label for="CellNumber">Cell Number</label>
                                 <input type="tel" id="CellNumber" name="CellNumber">
                             </div>
-                            
+
                             <!-- Row 3 -->
                             <div class="form-group">
                                 <label for="CkIdNumber">CK / ID Number</label>
                                 <input type="text" id="CkIdNumber" name="CkIdNumber">
                             </div>
-                            
+
                             <div class="form-group">
                                 <label for="VatNumber">VAT Number</label>
                                 <input type="text" id="VatNumber" name="VatNumber">
                             </div>
-                            
+
                             <div class="form-group">
                                 <label for="TaxNumber">Tax Number</label>
                                 <input type="text" id="TaxNumber" name="TaxNumber">
                             </div>
-                            
+
                             <div class="form-group">
                                 <label for="PayeNumber">PAYE Number</label>
                                 <input type="text" id="PayeNumber" name="PayeNumber">
                             </div>
-                            
+
                             <!-- Row 4 -->
                             <div class="form-group">
                                 <label for="UifNumber">UIF Number</label>
                                 <input type="text" id="UifNumber" name="UifNumber">
                             </div>
-                            
+
                             <div class="form-group">
                                 <label for="SdlNumber">SDL Number</label>
                                 <input type="text" id="SdlNumber" name="SdlNumber">
                             </div>
-                            
+
                             <div class="form-group">
                                 <label for="WcaNumber">WCA Number</label>
                                 <input type="text" id="WcaNumber" name="WcaNumber">
                             </div>
-                            
+
                             <div class="form-group">
                                 <label for="YearEndId">Year End</label>
                                 <select id="YearEndId" name="YearEndId">
@@ -212,7 +218,7 @@
                                     <option value="12">December</option>
                                 </select>
                             </div>
-                            
+
                             <!-- Row 5 -->
                             <div class="form-group">
                                 <label for="ClientStatusId">Client Status</label>
@@ -226,12 +232,12 @@
                                     <option value="6">Deceased</option>
                                 </select>
                             </div>
-                            
+
                             <!-- Empty cells for spacing -->
                             <div class="form-group"></div>
                             <div class="form-group"></div>
                             <div class="form-group"></div>
-                            
+
                             <!-- Address spans full width -->
                             <div class="form-group full-width">
                                 <label for="Address">Address</label>
@@ -240,7 +246,7 @@
                         </div>
                     </form>
                 </div>
-                
+
                 <!-- Relations Tab -->
                 <div class="tab-pane" id="relations-tab">
                     <div class="empty-state">
@@ -251,7 +257,7 @@
                         <p>Client relationship management features coming soon.</p>
                     </div>
                 </div>
-                
+
                 <!-- Services Tab -->
                 <div class="tab-pane" id="services-tab">
                     <div class="empty-state">
@@ -262,18 +268,113 @@
                         <p>Service management features coming soon.</p>
                     </div>
                 </div>
-                
+
                 <!-- Tasks Tab -->
                 <div class="tab-pane" id="tasks-tab">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">
-                            <i class="fas fa-tasks"></i>
+                    <div class="tasks-header">
+                        <h2 class="tasks-title">Client Tasks</h2>
+                        <div class="tasks-actions">
+                            <button class="btn-primary" onclick="addNewTask()">
+                                <i class="fas fa-plus"></i> Add Task
+                            </button>
+                            <button class="btn-secondary" onclick="refreshTasks()">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                            <button class="btn-secondary" id="toggleInactiveBtn" onclick="toggleInactiveTasks()">
+                                <i class="fas fa-eye"></i> Show Inactive
+                            </button>
                         </div>
-                        <h3>Tasks</h3>
-                        <p>Task management features coming soon.</p>
+                    </div>
+
+                    <div class="tasks-table-container">
+                        <table class="tasks-table">
+                            <thead>
+                                <tr>
+                                    <th>Task Name</th>
+                                    <th>Category</th>
+                                    <th>Period</th>
+                                    <th>Description</th>
+                                    <th>Status</th>
+                                    <th>Due Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tasksTableBody">
+                                <!-- Sample data - replace with dynamic content -->
+                                <tr data-task-id="task1">
+                                    <td><strong>Annual Financial Statements</strong></td>
+                                    <td>AFS</td>
+                                    <td>2024</td>
+                                    <td>Preparation of annual financial statements</td>
+                                    <td><span class="status-badge status-active">Active</span></td>
+                                    <td>2024-03-31</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn-action btn-bill"
+                                                onclick="billTask('task1')">Bill</button>
+                                            <button class="btn-action btn-view"
+                                                onclick="viewTask('task1')">View</button>
+                                            <button class="btn-action btn-delete"
+                                                onclick="deleteTask('task1')">Delete</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr data-task-id="task2">
+                                    <td><strong>Monthly Management Accounts</strong></td>
+                                    <td>Management</td>
+                                    <td>Monthly</td>
+                                    <td>Preparation of monthly management accounts</td>
+                                    <td><span class="status-badge status-active">Active</span></td>
+                                    <td>2024-02-15</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn-action btn-bill"
+                                                onclick="billTask('task2')">Bill</button>
+                                            <button class="btn-action btn-view"
+                                                onclick="viewTask('task2')">View</button>
+                                            <button class="btn-action btn-delete" disabled
+                                                title="Cannot delete - has associated times">Delete</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- Inactive task examples -->
+                                <tr class="inactive-task hidden" data-task-id="task3">
+                                    <td><strong>Previous Year Tax Returns</strong></td>
+                                    <td>Tax</td>
+                                    <td>2023</td>
+                                    <td>Completed tax returns for previous period</td>
+                                    <td><span class="status-badge status-inactive">Inactive</span></td>
+                                    <td>2023-09-30</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn-action btn-view"
+                                                onclick="viewTask('task3')">View</button>
+                                            <button class="btn-action btn-delete"
+                                                onclick="deleteTask('task3')">Delete</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="inactive-task hidden" data-task-id="task3">
+                                    <td><strong>Quarterly VAT Returns</strong></td>
+                                    <td>VAT</td>
+                                    <td>Q4 2023</td>
+                                    <td>Completed quarterly VAT submissions</td>
+                                    <td><span class="status-badge status-inactive">Inactive</span></td>
+                                    <td>2023-12-31</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn-action btn-view"
+                                                onclick="viewTask('task4')">View</button>
+                                            <button class="btn-action btn-delete"
+                                                onclick="deleteTask('task4')">Delete</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-                
+
                 <!-- Timesheet Tab -->
                 <div class="tab-pane" id="timesheet-tab">
                     <div class="empty-state">
@@ -284,7 +385,7 @@
                         <p>Timesheet tracking features coming soon.</p>
                     </div>
                 </div>
-                
+
                 <!-- Billing Tab -->
                 <div class="tab-pane" id="billing-tab">
                     <div class="empty-state">
@@ -295,7 +396,7 @@
                         <p>Billing management features coming soon.</p>
                     </div>
                 </div>
-                
+
                 <!-- Notes Tab -->
                 <div class="tab-pane" id="notes-tab">
                     <div class="notes-section">
@@ -309,7 +410,7 @@
                                 <span id="note-status" class="text-muted"></span>
                             </div>
                         </div>
-                        
+
                         <div class="notes-list">
                             <div id="notes-container">
                                 <div class="empty-state">
@@ -351,7 +452,115 @@
         <div class="loading-spinner"></div>
     </div>
 
+      <!-- Task Detail Modal -->
+    <div id="taskModal" class="modal">
+        <div class="modal-content task-modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="taskModalTitle">Task Details</h2>
+                <span class="modal-close-button" onclick="closeTaskModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="modalTaskName">Task Name</label>
+                        <input type="text" id="modalTaskName" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalTaskCategory">Category</label>
+                        <input type="text" id="modalTaskCategory" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalTaskPeriod">Period</label>
+                        <input type="text" id="modalTaskPeriod" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="modalTaskStatus">Status</label>
+                        <input type="text" id="modalTaskStatus" readonly>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="modalTaskDescription">Description</label>
+                        <textarea id="modalTaskDescription" rows="3" readonly></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn btn-primary" onclick="billCurrentTask()">
+                        <i class="fas fa-dollar-sign"></i> Bill This Task
+                    </button>
+                </div>
+
+                <!-- Time Ledger Section -->
+                <div class="time-ledger">
+                    <div class="ledger-header">
+                        <h3>Time Transactions</h3>
+                        <div class="ledger-actions">
+                            <button class="btn btn-secondary" onclick="linkUnassignedTimes()">
+                                <i class="fas fa-link"></i> Link Times
+                            </button>
+                            <button class="btn btn-secondary" onclick="refreshTimeLedger()">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="ledger-table-container">
+                        <table class="ledger-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                    <th>Hours</th>
+                                    <th>Rate</th>
+                                    <th>Amount</th>
+                                    <th>Staff</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="timeLedgerBody">
+                                <!-- Sample time entries -->
+                                <tr>
+                                    <td>2024-01-15</td>
+                                    <td>Financial statement preparation</td>
+                                    <td>3.5</td>
+                                    <td>R 850</td>
+                                    <td>R 2,975</td>
+                                    <td>John Smith</td>
+                                    <td>
+                                        <button class="btn-action btn-delete"
+                                            onclick="unlinkTime('time1')">Unlink</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>2024-01-20</td>
+                                    <td>Trial balance review</td>
+                                    <td>2.0</td>
+                                    <td>R 650</td>
+                                    <td>R 1,300</td>
+                                    <td>Jane Doe</td>
+                                    <td>
+                                        <button class="btn-action btn-delete"
+                                            onclick="unlinkTime('time2')">Unlink</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="ledger-total">
+                                    <td colspan="4"><strong>Total</strong></td>
+                                    <td><strong>R 4,275</strong></td>
+                                    <td colspan="2"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Updated JS Path & Added type="module" -->
     <script type="module" src="js/clientview.js" defer></script>
+
+  
 </body>
+
 </html>

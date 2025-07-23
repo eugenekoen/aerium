@@ -392,7 +392,7 @@ function populateForm(client) {
     if (!client) return;
   
     // Update header
-    updateClientHeader(client.client_name);
+    updateClientHeader(client.client_name+" ("+client.ClientCode+")");
   
     // Populate form fields
     Object.keys(client).forEach(key => {

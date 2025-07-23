@@ -89,6 +89,7 @@ export async function checkLoginAndRedirect(appPageURL = 'AllClients.html')
         // Ignore getSession errors on the login page, as the user might not be logged in anyway.
         if (error)
         {
+            AppState.clearUser();
             console.warn("Ignoring error getting session on login page:", error);
         }
 
@@ -145,7 +146,7 @@ const INACTIVITY_TIMEOUT_MS = 5 * 60 * 1000; // 10 minutes
 let inactivityTimerId = null; // Initialize to null
 
 // Simple debounce function
-function debounce(func, wait)
+export function debounce(func, wait)
 {
     let timeout;
     return function executedFunction(...args)

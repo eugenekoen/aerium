@@ -4,6 +4,7 @@ import { supabase, checkAuthAndRedirect } from './shared.js';
 export const AppState = {
     user: null,
     session: null,
+
     
     // Load from localStorage on initialization
     _loadFromStorage() {
@@ -41,15 +42,8 @@ export const AppState = {
     
     // Initialize user data (call once per page load)
     async initializeUser() {
-        // First, try to load from storage
-        this._loadFromStorage();
-        
-        if (this.user && this.session) {
-            console.log('User loaded from storage:', this.user);
-            return this.user; // Return cached data
-        }
-        
-        // If not in storage, fetch from Supabase
+
+        //fetch from Supabase
         this.session = await checkAuthAndRedirect();
         if (!this.session) {
             this._clearStorage();
@@ -61,7 +55,7 @@ export const AppState = {
         try {
             const { data: profile, error } = await supabase
                 .from('Profiles')
-                .select('full_name')
+                .select('full_name, short_name')
                 .eq('id', this.session.user.id)
                 .maybeSingle();
                 
@@ -70,13 +64,15 @@ export const AppState = {
                 this.user = {
                     id: this.session.user.id,
                     email: this.session.user.email,
-                    full_name: this.session.user.email
+                    full_name: profile?.full_name,
+                    short_name: profile?.short_name || 'USR',
                 };
             } else {
                 this.user = {
                     id: this.session.user.id,
                     email: this.session.user.email,
-                    full_name: profile?.full_name || this.session.user.email
+                    full_name: profile?.full_name || this.session.user.email,
+                    short_name: profile?.short_name || 'USR'
                 };
             }
             
@@ -108,4 +104,3 @@ export const AppState = {
         this._clearStorage();
     }
 };
-

@@ -1,0 +1,697 @@
+/* Reset and base styles matching app.css theme */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Roboto", sans-serif;
+    background-color: #b0cbd163;
+    color: #333;
+    line-height: 1.6;
+    margin-left: 200px; /* Account for sidebar */
+}
+
+/* Top header bar - matches app theme instead of purple gradient */
+.client-header-bar {
+    background: linear-gradient(135deg, #1c90c9 0%, #527a7a 100%);
+    color: white;
+    padding: 12px 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 60px;
+}
+
+.client-title-section {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.client-main-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.client-subtitle {
+    font-size: 13px;
+    opacity: 0.9;
+    margin: 2px 0 0 0;
+}
+
+/* Search section in top right */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+#client-search-input {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    padding: 6px 12px 6px 32px;
+    color: white;
+    font-size: 13px;
+    width: 280px;
+    transition: all 0.3s ease;
+}
+
+#client-search-input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+#client-search-input:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.search-icon {
+    position: absolute;
+    left: 10px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 13px;
+}
+
+.search-results-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    max-height: 250px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+}
+
+.search-result-item {
+    padding: 10px 12px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    color: #333;
+}
+
+.search-result-item:hover {
+    background-color: #f8f9fa;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+.search-result-name {
+    font-weight: 500;
+    margin-bottom: 2px;
+    font-size: 13px;
+}
+
+.search-result-details {
+    font-size: 11px;
+    color: #666;
+}
+
+/* Save button in header */
+.header-save-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.header-save-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.header-save-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Main content container with max width */
+.main-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: transparent;
+}
+
+/* Save status indicator */
+.save-status {
+    background: white;
+    border-radius: 6px;
+    padding: 8px 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 15px;
+    display: none;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    max-width: fit-content;
+}
+
+.save-status.saved {
+    background: #d4edda;
+    color: #155724;
+}
+
+.save-status.saving {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.save-status.error {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Tabs container */
+.tabs-container {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.tabs-header {
+    display: flex;
+    background: #d2d6d7; /* Match app.css table header color */
+    border-bottom: 1px solid #e0e4e7;
+    overflow-x: auto;
+}
+
+.tab-button {
+    padding: 12px 16px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: #555;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: "Roboto", sans-serif;
+}
+
+.tab-button:hover {
+    background-color: #c5c9ca;
+    color: #1c90c9;
+}
+
+.tab-button.active {
+    background-color: white;
+    color: #1c90c9;
+    border-bottom-color: #1c90c9;
+}
+
+.tab-content {
+    padding: 20px;
+    min-height: 400px;
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+/* Form styling */
+.section-title {
+    color: #333;
+    font-size: 18px;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e0e4e7;
+    font-weight: 500;
+}
+
+/* Compact 4-column form grid */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px 20px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.form-group label {
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 4px;
+    font-size: 13px;
+    font-family: "Roboto", sans-serif;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: "Roboto", sans-serif;
+    transition: border-color 0.3s ease;
+    background-color: #fff;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #1c90c9;
+    box-shadow: 0 0 0 2px rgba(28, 144, 201, 0.1);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 70px;
+}
+
+/* Address field spans full width */
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+/* Unsaved changes indicator */
+.form-group.unsaved::after {
+    content: '•';
+    position: absolute;
+    right: 6px;
+    top: 24px;
+    color: #ff9800;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+/* Notes section */
+.notes-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.add-note-container {
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 15px;
+    border: 1px solid #e0e4e7;
+}
+
+.add-note-container h3 {
+    margin-bottom: 10px;
+    color: #333;
+    font-size: 16px;
+}
+
+#new-note-content {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 13px;
+    resize: vertical;
+    min-height: 80px;
+    font-family: "Roboto", sans-serif;
+    margin-bottom: 8px;
+}
+
+#new-note-content:focus {
+    outline: none;
+    border-color: #1c90c9;
+    box-shadow: 0 0 0 2px rgba(28, 144, 201, 0.1);
+}
+
+.note-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn-save-note {
+    background: #1c90c9;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: "Roboto", sans-serif;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-save-note:hover {
+    background: #527a7a;
+}
+
+.btn-save-note:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+}
+
+.notes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.note-item {
+    background: white;
+    border: 1px solid #e0e4e7;
+    border-radius: 6px;
+    padding: 15px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.note-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.note-meta {
+    font-size: 11px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.note-actions-buttons {
+    display: flex;
+    gap: 4px;
+}
+
+.note-content {
+    color: #333;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    font-size: 13px;
+}
+
+/* Button styles matching app.css */
+.btn {
+    padding: 8px 15px;
+    background-color: #1c90c9;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-size: 13px;
+    font-family: "Roboto", sans-serif;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn:hover:not([disabled]) {
+    background-color: #527a7a;
+}
+
+.btn[disabled] {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.btn-small {
+    padding: 5px 10px;
+    font-size: 12px;
+}
+
+.btn-edit {
+    background: #4CAF50;
+}
+
+.btn-edit:hover {
+    background: #45a049;
+}
+
+.btn-delete {
+    background: #f44336;
+}
+
+.btn-delete:hover {
+    background: #da190b;
+}
+
+.btn-secondary {
+    background: #6c757d;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
+/* Modal styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    font-family: "Roboto", sans-serif;
+}
+
+.modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0e4e7;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: #333;
+    font-size: 16px;
+}
+
+.modal-close-button {
+    font-size: 20px;
+    cursor: pointer;
+    color: #999;
+    transition: color 0.3s ease;
+}
+
+.modal-close-button:hover {
+    color: #333;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #e0e4e7;
+}
+
+#edit-note-textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 13px;
+    resize: vertical;
+    min-height: 100px;
+    font-family: "Roboto", sans-serif;
+    margin-bottom: 10px;
+}
+
+#edit-note-textarea:focus {
+    outline: none;
+    border-color: #1c90c9;
+    box-shadow: 0 0 0 2px rgba(28, 144, 201, 0.1);
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 30px 20px;
+    color: #666;
+}
+
+.empty-state-icon {
+    font-size: 36px;
+    color: #ccc;
+    margin-bottom: 12px;
+}
+
+.empty-state h3 {
+    margin-bottom: 8px;
+    color: #555;
+    font-size: 16px;
+}
+
+.empty-state p {
+    color: #777;
+    font-size: 13px;
+}
+
+/* Loading overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.loading-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #1c90c9;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Text utility classes */
+.text-muted {
+    color: #666;
+}
+
+.text-success {
+    color: #28a745;
+}
+
+.text-warning {
+    color: #ff9800;
+}
+
+.text-danger {
+    color: #dc3545;
+}
+
+/* Responsive design */
+@media (max-width: 1400px) {
+    .form-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 1024px) {
+    .form-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    #client-search-input {
+        width: 200px;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        margin-left: 0;
+    }
+    
+    .main-content {
+        padding: 15px;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .client-header-bar {
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
+    }
+    
+    .header-actions {
+        justify-content: space-between;
+    }
+    
+    #client-search-input {
+        width: 100%;
+    }
+    
+    .tabs-header {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .tab-button {
+        flex-shrink: 0;
+        min-width: 100px;
+    }
+}
+
+/* Sidebar placeholder */
+#sidebar-placeholder {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    font-family: "Roboto", sans-serif;
+}

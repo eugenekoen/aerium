@@ -68,3 +68,11 @@ if (loginForm)
 {
     console.error("Login form not found in the DOM.");
 }
+
+
+// --- 4. Initial Check ---
+// Check if already logged in when the page loads
+document.addEventListener('DOMContentLoaded', () =>
+{
+    checkLoginAndRedirect('index.html');
+});

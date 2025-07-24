@@ -1,13 +1,14 @@
 // File Name: js/clientview.js
 
 // --- 1. Import Shared Functionality ---
-import {
-    supabase,
-    checkAuthAndRedirect,
-    setupInactivityDetection,
-    loadSidebar,
-    resetInactivityTimer
-} from './shared.js';
+import
+    {
+        supabase,
+        checkAuthAndRedirect,
+        setupInactivityDetection,
+        loadSidebar,
+        resetInactivityTimer
+    } from './shared.js';
 
 // --- 2. Global Variables ---
 let currentMode = 'edit';
@@ -59,25 +60,30 @@ const contactsTableBody = document.getElementById('contacts-table-body');
 const loadingOverlay = document.getElementById('loading-overlay');
 
 // --- 4. Utility Functions ---
-function showLoading() {
+function showLoading()
+{
     if (loadingOverlay) loadingOverlay.style.display = 'flex';
 }
 
-function hideLoading() {
+function hideLoading()
+{
     if (loadingOverlay) loadingOverlay.style.display = 'none';
 }
 
-function updateSaveStatus(status, message) {
+function updateSaveStatus(status, message)
+{
     if (!saveStatus) return;
-  
+
     saveStatus.className = `save-status ${status}`;
     saveStatus.style.display = 'flex';
-  
+
     const icon = saveStatus.querySelector('.save-icon');
     const text = saveStatus.querySelector('.save-text');
-  
-    if (icon && text) {
-        switch (status) {
+
+    if (icon && text)
+    {
+        switch (status)
+        {
             case 'saving':
                 icon.className = 'fas fa-spinner fa-spin save-icon';
                 text.textContent = message || 'Saving changes...';
@@ -94,10 +100,13 @@ function updateSaveStatus(status, message) {
                 saveStatus.style.display = 'none';
         }
     }
-  
-    if (status === 'saved') {
-        setTimeout(() => {
-            if (unsavedChanges.size === 0) {
+
+    if (status === 'saved')
+    {
+        setTimeout(() =>
+        {
+            if (unsavedChanges.size === 0)
+            {
                 saveStatus.style.display = 'none';
             }
         }, 3000);
@@ -105,39 +114,47 @@ function updateSaveStatus(status, message) {
 }
 
 // --- 5. Tab Management ---
-function initializeTabs() {
-    tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
+function initializeTabs()
+{
+    tabButtons.forEach(button =>
+    {
+        button.addEventListener('click', () =>
+        {
             const tabId = button.dataset.tab;
             switchTab(tabId);
         });
     });
 }
 
-function switchTab(tabId) {
+function switchTab(tabId)
+{
     // Update buttons
     tabButtons.forEach(btn => btn.classList.remove('active'));
     const activeButton = document.querySelector(`[data-tab="${tabId}"]`);
     if (activeButton) activeButton.classList.add('active');
-  
+
     // Update panes
     tabPanes.forEach(pane => pane.classList.remove('active'));
     const activePane = document.getElementById(`${tabId}-tab`);
     if (activePane) activePane.classList.add('active');
-  
+
     // Load tab-specific content
     loadTabContent(tabId);
 }
 
-async function loadTabContent(tabId) {
-    switch (tabId) {
+async function loadTabContent(tabId)
+{
+    switch (tabId)
+    {
         case 'notes':
-            if (currentMode === 'edit' && currentClientId) {
+            if (currentMode === 'edit' && currentClientId)
+            {
                 await loadAndDisplayNotes();
             }
             break;
         case 'tasks':
-            if (currentMode === 'edit' && currentClientId) {
+            if (currentMode === 'edit' && currentClientId)
+            {
                 loadTasks();
             }
             break;
@@ -149,75 +166,92 @@ async function loadTabContent(tabId) {
 }
 
 // --- 6. Client Search Functionality ---
-function initializeClientSearch() {
+function initializeClientSearch()
+{
     if (!clientSearchInput) return;
-  
+
     clientSearchInput.addEventListener('input', handleSearchInput);
     clientSearchInput.addEventListener('focus', handleSearchFocus);
     document.addEventListener('click', handleSearchClickOutside);
 }
 
-function handleSearchInput(event) {
+function handleSearchInput(event)
+{
     const query = event.target.value.trim();
-  
+
     // Clear previous timeout
-    if (searchTimeout) {
+    if (searchTimeout)
+    {
         clearTimeout(searchTimeout);
     }
-  
+
     // Hide dropdown if query is too short
-    if (query.length < 2) {
+    if (query.length < 2)
+    {
         hideSearchResults();
         return;
     }
-  
+
     // Debounce search
-    searchTimeout = setTimeout(() => {
+    searchTimeout = setTimeout(() =>
+    {
         performClientSearch(query);
     }, 300);
 }
 
-function handleSearchFocus() {
+function handleSearchFocus()
+{
     const query = clientSearchInput.value.trim();
-    if (query.length >= 2) {
+    if (query.length >= 2)
+    {
         performClientSearch(query);
     }
 }
 
-function handleSearchClickOutside(event) {
-    if (!event.target.closest('.search-input-container')) {
+function handleSearchClickOutside(event)
+{
+    if (!event.target.closest('.search-input-container'))
+    {
         hideSearchResults();
     }
 }
 
-async function performClientSearch(query) {
-    try {
+async function performClientSearch(query)
+{
+    try
+    {
         const { data: clients, error } = await supabase
             .from('Clients')
             .select('Id, client_name, ClientCode, EmailAddress')
             .or(`client_name.ilike.%${query}%,ClientCode.ilike.%${query}%,EmailAddress.ilike.%${query}%`)
             .limit(10);
-          
-        if (error) {
+
+        if (error)
+        {
             console.error('Search error:', error);
             return;
         }
-      
+
         displaySearchResults(clients || []);
-    } catch (err) {
+    } catch (err)
+    {
         console.error('Search error:', err);
     }
 }
 
-function displaySearchResults(clients) {
+function displaySearchResults(clients)
+{
     if (!searchResultsDropdown) return;
-  
+
     searchResultsDropdown.innerHTML = '';
-  
-    if (clients.length === 0) {
+
+    if (clients.length === 0)
+    {
         searchResultsDropdown.innerHTML = '<div class="search-result-item">No clients found</div>';
-    } else {
-        clients.forEach(client => {
+    } else
+    {
+        clients.forEach(client =>
+        {
             const item = document.createElement('div');
             item.className = 'search-result-item';
             item.innerHTML = `
@@ -227,31 +261,39 @@ function displaySearchResults(clients) {
                     ${client.EmailAddress ? ` • ${client.EmailAddress}` : ''}
                 </div>
             `;
-          
-            item.addEventListener('click', () => {
+
+            item.addEventListener('click', () =>
+            {
                 navigateToClient(client.Id);
             });
-          
+
             searchResultsDropdown.appendChild(item);
         });
     }
-  
+
     searchResultsDropdown.style.display = 'block';
 }
 
-function hideSearchResults() {
-    if (searchResultsDropdown) {
+function hideSearchResults()
+{
+    if (searchResultsDropdown)
+    {
         searchResultsDropdown.style.display = 'none';
     }
 }
 
-function navigateToClient(clientId) {
-    if (clientId !== currentClientId) {
-        if (unsavedChanges.size > 0) {
-            if (confirm('You have unsaved changes. Do you want to leave without saving?')) {
+function navigateToClient(clientId)
+{
+    if (clientId !== currentClientId)
+    {
+        if (unsavedChanges.size > 0)
+        {
+            if (confirm('You have unsaved changes. Do you want to leave without saving?'))
+            {
                 window.location.href = `ClientView.html?clientId=${clientId}`;
             }
-        } else {
+        } else
+        {
             window.location.href = `ClientView.html?clientId=${clientId}`;
         }
     }
@@ -260,98 +302,114 @@ function navigateToClient(clientId) {
 }
 
 // --- 7. Autosave Functionality ---
-function initializeAutosave() {
+function initializeAutosave()
+{
     // Track form field changes
     const formElements = clientForm.querySelectorAll('input, select, textarea');
-  
-    formElements.forEach(element => {
+
+    formElements.forEach(element =>
+    {
         // Store original values
         originalFormData[element.name] = element.value;
-      
+
         // Add change listeners
         element.addEventListener('input', () => handleFieldChange(element));
         element.addEventListener('change', () => handleFieldChange(element));
     });
-  
+
     // Start autosave interval (every 30 seconds)
     autosaveInterval = setInterval(performAutosave, 30000);
 }
 
-function handleFieldChange(element) {
+function handleFieldChange(element)
+{
     const fieldName = element.name;
     const currentValue = element.value;
     const originalValue = originalFormData[fieldName] || '';
-  
+
     const formGroup = element.closest('.form-group');
-  
-    if (currentValue !== originalValue) {
+
+    if (currentValue !== originalValue)
+    {
         // Mark as unsaved
         unsavedChanges.add(fieldName);
         if (formGroup) formGroup.classList.add('unsaved');
-    } else {
+    } else
+    {
         // Mark as saved
         unsavedChanges.delete(fieldName);
         if (formGroup) formGroup.classList.remove('unsaved');
     }
-  
+
     // Update save status
-    if (unsavedChanges.size > 0) {
+    if (unsavedChanges.size > 0)
+    {
         updateSaveStatus('', `${unsavedChanges.size} unsaved change${unsavedChanges.size > 1 ? 's' : ''}`);
-    } else {
+    } else
+    {
         updateSaveStatus('saved');
     }
 }
 
-async function performAutosave() {
+async function performAutosave()
+{
     if (unsavedChanges.size === 0 || !currentClientId) return;
-  
+
     updateSaveStatus('saving');
-  
-    try {
+
+    try
+    {
         const formData = new FormData(clientForm);
         const clientData = {};
-      
+
         // Only include changed fields
-        for (const fieldName of unsavedChanges) {
+        for (const fieldName of unsavedChanges)
+        {
             const value = formData.get(fieldName);
             clientData[fieldName] = value ? value.trim() : null;
-          
+
             // Handle numeric fields
-            if (['ClientTypeId', 'YearEndId', 'ClientStatusId'].includes(fieldName)) {
+            if (['ClientTypeId', 'YearEndId', 'ClientStatusId'].includes(fieldName))
+            {
                 clientData[fieldName] = value ? parseInt(value) : null;
             }
         }
-      
+
         const { error } = await supabase
             .from('Clients')
             .update(clientData)
             .eq('Id', currentClientId);
-          
-        if (error) {
+
+        if (error)
+        {
             throw error;
         }
-      
+
         // Update original data and clear unsaved changes
-        unsavedChanges.forEach(fieldName => {
+        unsavedChanges.forEach(fieldName =>
+        {
             originalFormData[fieldName] = formData.get(fieldName) || '';
             const element = clientForm.querySelector(`[name="${fieldName}"]`);
-            if (element) {
+            if (element)
+            {
                 const formGroup = element.closest('.form-group');
                 if (formGroup) formGroup.classList.remove('unsaved');
             }
         });
-      
+
         unsavedChanges.clear();
         updateSaveStatus('saved');
-      
-    } catch (error) {
+
+    } catch (error)
+    {
         console.error('Autosave error:', error);
         updateSaveStatus('error', 'Failed to save changes');
     }
 }
 
 // --- 8. Client Data Management ---
-function getUrlParams() {
+function getUrlParams()
+{
     const urlParams = new URLSearchParams(window.location.search);
     const clientId = urlParams.get('clientId');
     const mode = urlParams.get('mode');
@@ -359,20 +417,23 @@ function getUrlParams() {
     currentMode = mode === 'add' ? 'add' : 'edit';
     currentClientId = clientId ? parseInt(clientId) : null;
 
-    if (currentMode === 'edit' && (currentClientId === null || isNaN(currentClientId))) {
+    if (currentMode === 'edit' && (currentClientId === null || isNaN(currentClientId)))
+    {
         console.error("Invalid or missing Client ID in URL for Edit mode:", clientId);
         return false;
     }
-  
+
     return true;
 }
 
-async function fetchClientData(clientId) {
+async function fetchClientData(clientId)
+{
     if (!clientId) return null;
-  
+
     showLoading();
-  
-    try {
+
+    try
+    {
         const { data: client, error } = await supabase
             .from('Clients')
             .select(`
@@ -385,148 +446,172 @@ async function fetchClientData(clientId) {
 
         if (error) throw error;
         if (!client) throw new Error(`Client with ID ${clientId} not found`);
-      
+
         return client;
-    } catch (error) {
+    } catch (error)
+    {
         console.error('Error fetching client data:', error);
         updateClientHeader('Error', `Failed to load client: ${error.message}`);
         return null;
-    } finally {
+    } finally
+    {
         hideLoading();
     }
 }
 
-function populateForm(client) {
+function populateForm(client)
+{
     if (!client) return;
-  
+
     // Update header
-    updateClientHeader(client.client_name+" ("+client.ClientCode+")");
-  
+    updateClientHeader(client.client_name + " (" + client.ClientCode + ")");
+
     // Populate form fields
-    Object.keys(client).forEach(key => {
+    Object.keys(client).forEach(key =>
+    {
         const element = document.getElementById(key) || document.querySelector(`[name="${key}"]`);
-        if (element) {
+        if (element)
+        {
             element.value = client[key] || '';
             originalFormData[element.name] = element.value;
         }
     });
-  
+
     // Clear any unsaved indicators
     unsavedChanges.clear();
-    document.querySelectorAll('.form-group.unsaved').forEach(group => {
+    document.querySelectorAll('.form-group.unsaved').forEach(group =>
+    {
         group.classList.remove('unsaved');
     });
 }
 
-function updateClientHeader(name, subtitle = '') {
+function updateClientHeader(name, subtitle = '')
+{
     if (clientHeaderName) clientHeaderName.textContent = name;
     if (clientHeaderSubtitle) clientHeaderSubtitle.textContent = subtitle;
-  
+
     // Update page title
     document.title = `${name} - Client View`;
 }
 
 // --- 9. Manual Save Handler ---
-async function handleFormSubmit(event) {
+async function handleFormSubmit(event)
+{
     event.preventDefault();
     resetInactivityTimer();
-  
+
     if (!currentClientId) return;
-  
+
     updateSaveStatus('saving');
-  
-    try {
+
+    try
+    {
         const formData = new FormData(clientForm);
         const clientData = {};
-      
+
         // Build complete client data object
-        for (const [key, value] of formData.entries()) {
+        for (const [key, value] of formData.entries())
+        {
             clientData[key] = value ? value.trim() : null;
-          
+
             // Handle numeric fields
-            if (['ClientTypeId', 'YearEndId', 'ClientStatusId'].includes(key)) {
+            if (['ClientTypeId', 'YearEndId', 'ClientStatusId'].includes(key))
+            {
                 clientData[key] = value ? parseInt(value) : null;
             }
         }
-      
+
         const { data, error } = await supabase
             .from('Clients')
             .update(clientData)
             .eq('Id', currentClientId)
             .select()
             .single();
-          
+
         if (error) throw error;
-      
+
         // Update original data and clear unsaved changes
-        Object.keys(clientData).forEach(key => {
+        Object.keys(clientData).forEach(key =>
+        {
             originalFormData[key] = clientData[key] || '';
         });
-      
+
         unsavedChanges.clear();
-        document.querySelectorAll('.form-group.unsaved').forEach(group => {
+        document.querySelectorAll('.form-group.unsaved').forEach(group =>
+        {
             group.classList.remove('unsaved');
         });
-      
+
         updateSaveStatus('saved');
-      
+
         // Update header with new data
-        if (data) {
+        if (data)
+        {
             updateClientHeader(data.client_name, data.ClientCode ? `Code: ${data.ClientCode}` : '');
         }
-      
-    } catch (error) {
+
+    } catch (error)
+    {
         console.error('Save error:', error);
         updateSaveStatus('error', `Save failed: ${error.message}`);
     }
 }
 
 // --- 10. Notes Functionality ---
-async function loadAndDisplayNotes() {
+async function loadAndDisplayNotes()
+{
     if (!currentClientId) return;
-  
-    try {
+
+    try
+    {
         const { data: notes, error } = await supabase
             .from('Notes')
             .select(`id, note_content, created_at, client_id, created_by`)
             .eq('client_id', currentClientId)
             .order('created_at', { ascending: false });
-          
+
         if (error) throw error;
-      
+
         clientNotes = notes || [];
-      
+
         // Get user names for note creators
         const creatorIds = [...new Set(notes?.map(note => note.created_by).filter(id => id))];
         const userNamesMap = new Map();
-      
-        if (creatorIds.length > 0) {
+
+        if (creatorIds.length > 0)
+        {
             const { data: profiles } = await supabase
                 .from('Profiles')
                 .select('id, full_name')
                 .in('id', creatorIds);
-              
-            if (profiles) {
-                profiles.forEach(profile => {
+
+            if (profiles)
+            {
+                profiles.forEach(profile =>
+                {
                     userNamesMap.set(profile.id, profile.full_name?.trim() || `User (${profile.id.substring(0, 6)}...)`);
                 });
             }
         }
-      
+
         displayNotes(notes || [], userNamesMap);
-      
-    } catch (error) {
+
+    } catch (error)
+    {
         console.error('Error loading notes:', error);
-        if (notesContainer) {
+        if (notesContainer)
+        {
             notesContainer.innerHTML = `<div class="empty-state text-danger">Error loading notes: ${error.message}</div>`;
         }
     }
 }
 
-function displayNotes(notes, userMap) {
+function displayNotes(notes, userMap)
+{
     if (!notesContainer) return;
-  
-    if (notes.length === 0) {
+
+    if (notes.length === 0)
+    {
         notesContainer.innerHTML = `
             <div class="empty-state">
                 <div class="empty-state-icon">
@@ -538,19 +623,21 @@ function displayNotes(notes, userMap) {
         `;
         return;
     }
-  
+
     notesContainer.innerHTML = '';
-  
-    notes.forEach(note => {
+
+    notes.forEach(note =>
+    {
         const noteElement = createNoteElement(note, userMap);
         notesContainer.appendChild(noteElement);
     });
 }
 
-function createNoteElement(note, userMap) {
+function createNoteElement(note, userMap)
+{
     const noteDiv = document.createElement('div');
     noteDiv.className = 'note-item';
-  
+
     const createdAt = note.created_at ? new Date(note.created_at) : null;
     const dateString = createdAt ? createdAt.toLocaleDateString('en-ZA', {
         year: 'numeric',
@@ -560,11 +647,12 @@ function createNoteElement(note, userMap) {
         minute: '2-digit',
         hour12: false
     }) : 'N/A';
-  
-    const authorName = note.created_by ? 
-        (userMap.get(note.created_by) || `User (${note.created_by.substring(0, 6)}...)`) : 
+
+    const authorName = note.created_by ?
+        (userMap.get(note.created_by) || `User (${note.created_by.substring(0, 6)}...)`) :
         'Unknown User';
-  
+
+    // Set innerHTML WITHOUT inline onclick handlers
     noteDiv.innerHTML = `
         <div class="note-header">
             <div class="note-meta">
@@ -572,82 +660,116 @@ function createNoteElement(note, userMap) {
                 <i class="fas fa-calendar"></i> ${dateString}
             </div>
             <div class="note-actions-buttons">
-                <button class="btn btn-small btn-edit" onclick="openEditNoteModal(${note.id})">
+                <button class="btn btn-small btn-edit">
                     <i class="fas fa-edit"></i> Edit
                 </button>
-                <button class="btn btn-small btn-delete" onclick="deleteNote(${note.id}, '${(note.note_content || '').substring(0, 30).replace(/'/g, "\\'")}')">
+                <button class="btn btn-small btn-delete">
                     <i class="fas fa-trash"></i> Delete
                 </button>
             </div>
         </div>
         <div class="note-content">${note.note_content || ''}</div>
     `;
-  
+
+    // Find buttons and attach event listeners programmatically
+    const editButton = noteDiv.querySelector('.btn-edit');
+    if (editButton)
+    {
+        editButton.addEventListener('click', () =>
+        {
+            openEditNoteModal(note.id);
+        });
+    }
+
+    const deleteButton = noteDiv.querySelector('.btn-delete');
+    if (deleteButton)
+    {
+        const preview = (note.note_content || '').substring(0, 30).replace(/'/g, "\\'");
+        deleteButton.addEventListener('click', () =>
+        {
+            deleteNote(note.id, preview);
+        });
+    }
+
     return noteDiv;
 }
 
-async function saveNewNote() {
+
+async function saveNewNote()
+{
     const content = newNoteTextarea?.value?.trim();
     if (!content || !currentClientId) return;
-  
+
     if (saveNoteButton) saveNoteButton.disabled = true;
-    if (noteStatusSpan) {
+    if (noteStatusSpan)
+    {
         noteStatusSpan.textContent = 'Saving...';
         noteStatusSpan.className = 'text-warning';
     }
-  
-    try {
+
+    try
+    {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('User not found');
-      
+
         const { error } = await supabase.from('Notes').insert({
             client_id: currentClientId,
             note_content: content,
             created_by: user.id
         });
-      
+
         if (error) throw error;
-      
+
         if (newNoteTextarea) newNoteTextarea.value = '';
-        if (noteStatusSpan) {
+        if (noteStatusSpan)
+        {
             noteStatusSpan.textContent = 'Note saved!';
             noteStatusSpan.className = 'text-success';
         }
-      
+
         await loadAndDisplayNotes();
-      
-        setTimeout(() => {
+
+        setTimeout(() =>
+        {
             if (noteStatusSpan) noteStatusSpan.textContent = '';
         }, 3000);
-      
-    } catch (error) {
+
+    } catch (error)
+    {
         console.error('Save note error:', error);
-        if (noteStatusSpan) {
+        if (noteStatusSpan)
+        {
             noteStatusSpan.textContent = `Error: ${error.message}`;
             noteStatusSpan.className = 'text-danger';
         }
-    } finally {
+    } finally
+    {
         if (saveNoteButton) saveNoteButton.disabled = false;
     }
 }
 
 // --- 11. Tasks Functionality ---
-function toggleInactiveTasks() {
+function toggleInactiveTasks()
+{
     const inactiveTasks = document.querySelectorAll('.inactive-task');
     const toggleBtn = document.getElementById('toggleInactiveBtn');
-    
+
     showingInactive = !showingInactive;
-    
-    if (showingInactive) {
+
+    if (showingInactive)
+    {
         // Show inactive tasks
-        inactiveTasks.forEach(task => {
+        inactiveTasks.forEach(task =>
+        {
             task.classList.remove('hidden');
         });
         toggleBtn.innerHTML = '<i class="fas fa-eye-slash"></i> Hide Inactive';
         toggleBtn.classList.add('active');
-    } else {
+    } else
+    {
         // Hide inactive tasks
-        inactiveTasks.forEach(task => {
+        inactiveTasks.forEach(task =>
+        {
             task.classList.add('hidden');
         });
         toggleBtn.innerHTML = '<i class="fas fa-eye"></i> Show Inactive';
@@ -655,40 +777,46 @@ function toggleInactiveTasks() {
     }
 }
 
-function loadTasks() {
+function loadTasks()
+{
     console.log('Loading tasks for client:', currentClientId);
     // Implementation would load tasks from Supabase here
     // For now, this is handled by the static HTML
 }
 
-function addNewTask() {
+function addNewTask()
+{
     console.log('Opening new task form');
     // Implementation for adding new task
     alert('Add Task functionality will be implemented with your Supabase integration.');
 }
 
-function refreshTasks() {
+function refreshTasks()
+{
     console.log('Refreshing tasks');
     loadTasks();
     // You can add a visual refresh indicator here
     const refreshBtn = event.target;
     const originalText = refreshBtn.innerHTML;
     refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
-    
-    setTimeout(() => {
+
+    setTimeout(() =>
+    {
         refreshBtn.innerHTML = originalText;
     }, 1000);
 }
 
-function billTask(taskId) {
+function billTask(taskId)
+{
     console.log('Billing task:', taskId);
     // Implementation for billing a task
     alert('Bill Task functionality will be implemented with your billing system.');
 }
 
-function viewTask(taskId) {
+function viewTask(taskId)
+{
     console.log('Viewing task:', taskId);
-    
+
     // Sample task data - replace with actual data loading from Supabase
     const taskData = {
         taskName: 'Annual Financial Statements',
@@ -697,7 +825,7 @@ function viewTask(taskId) {
         status: 'Active',
         description: 'Preparation of annual financial statements for the year ending February 2024'
     };
-    
+
     // Populate modal
     document.getElementById('modalTaskName').value = taskData.taskName;
     document.getElementById('modalTaskCategory').value = taskData.category;
@@ -705,49 +833,58 @@ function viewTask(taskId) {
     document.getElementById('modalTaskStatus').value = taskData.status;
     document.getElementById('modalTaskDescription').value = taskData.description;
     document.getElementById('taskModalTitle').textContent = 'Task: ' + taskData.taskName;
-    
+
     // Show modal
     document.getElementById('taskModal').style.display = 'block';
 }
 
-function deleteTask(taskId) {
-    if (confirm('Are you sure you want to delete this task? This action cannot be undone.')) {
+function deleteTask(taskId)
+{
+    if (confirm('Are you sure you want to delete this task? This action cannot be undone.'))
+    {
         console.log('Deleting task:', taskId);
         // Implementation for deleting a task
         alert('Delete Task functionality will be implemented with your Supabase integration.');
     }
 }
 
-function closeTaskModal() {
+function closeTaskModal()
+{
     document.getElementById('taskModal').style.display = 'none';
 }
 
-function billCurrentTask() {
+function billCurrentTask()
+{
     console.log('Billing current task from modal');
     // Implementation for billing from task detail view
     alert('Billing functionality will be integrated with your billing system.');
 }
 
-function linkUnassignedTimes() {
+function linkUnassignedTimes()
+{
     console.log('Opening link times dialog');
     // Implementation for linking unassigned times
     alert('Link Times functionality will be implemented with your timesheet system.');
 }
 
-function refreshTimeLedger() {
+function refreshTimeLedger()
+{
     console.log('Refreshing time ledger');
     // Implementation for refreshing time ledger
     const refreshBtn = event.target;
     const originalText = refreshBtn.innerHTML;
     refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
-    
-    setTimeout(() => {
+
+    setTimeout(() =>
+    {
         refreshBtn.innerHTML = originalText;
     }, 1000);
 }
 
-function unlinkTime(timeId) {
-    if (confirm('Are you sure you want to unlink this time entry?')) {
+function unlinkTime(timeId)
+{
+    if (confirm('Are you sure you want to unlink this time entry?'))
+    {
         console.log('Unlinking time:', timeId);
         // Implementation for unlinking time
         alert('Unlink Time functionality will be implemented with your timesheet system.');
@@ -755,9 +892,12 @@ function unlinkTime(timeId) {
 }
 
 // --- 12. Additional Contacts (Placeholder) ---
-function initializeAdditionalContacts() {
-    if (addContactBtn) {
-        addContactBtn.addEventListener('click', () => {
+function initializeAdditionalContacts()
+{
+    if (addContactBtn)
+    {
+        addContactBtn.addEventListener('click', () =>
+        {
             // This would open the add contact modal
             // For now, just show an alert
             alert('Additional contacts functionality will be implemented soon.');
@@ -766,143 +906,172 @@ function initializeAdditionalContacts() {
 }
 
 // --- 13. Modal Management ---
-function initializeModals() {
+function initializeModals()
+{
     // Close modals when clicking outside or on close button
     const modals = document.querySelectorAll('.modal');
-  
-    modals.forEach(modal => {
+
+    modals.forEach(modal =>
+    {
         // Close on outside click
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
+        modal.addEventListener('click', (e) =>
+        {
+            if (e.target === modal)
+            {
                 modal.style.display = 'none';
             }
         });
-      
+
         // Close on close button click
         const closeBtn = modal.querySelector('.modal-close-button');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => {
+        if (closeBtn)
+        {
+            closeBtn.addEventListener('click', () =>
+            {
                 modal.style.display = 'none';
             });
         }
-      
+
         // Close on cancel button click
         const cancelBtn = modal.querySelector('.cancel-button');
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', () => {
+        if (cancelBtn)
+        {
+            cancelBtn.addEventListener('click', () =>
+            {
                 modal.style.display = 'none';
             });
         }
     });
-  
+
     // Save edited note
-    if (saveEditedNoteButton) {
+    if (saveEditedNoteButton)
+    {
         saveEditedNoteButton.addEventListener('click', saveEditedNote);
     }
 
     // Make sure the task modal closes when clicking outside
-    window.addEventListener('click', function(event) {
+    window.addEventListener('click', function (event)
+    {
         const taskModal = document.getElementById('taskModal');
-        if (event.target === taskModal) {
+        if (event.target === taskModal)
+        {
             closeTaskModal();
         }
     });
 }
 
-async function saveEditedNote() {
+async function saveEditedNote()
+{
     const noteId = parseInt(editingNoteIdInput?.value);
     const content = editNoteTextarea?.value?.trim();
-  
+
     if (!noteId || !content) return;
-  
+
     if (saveEditedNoteButton) saveEditedNoteButton.disabled = true;
-    if (editNoteStatusSpan) {
+    if (editNoteStatusSpan)
+    {
         editNoteStatusSpan.textContent = 'Saving...';
         editNoteStatusSpan.className = 'text-warning';
     }
-  
-    try {
+
+    try
+    {
         const { error } = await supabase
             .from('Notes')
             .update({ note_content: content })
             .eq('id', noteId);
-          
+
         if (error) throw error;
-      
-        if (editNoteStatusSpan) {
+
+        if (editNoteStatusSpan)
+        {
             editNoteStatusSpan.textContent = 'Saved!';
             editNoteStatusSpan.className = 'text-success';
         }
-      
-        setTimeout(() => {
+
+        setTimeout(() =>
+        {
             if (editNoteModal) editNoteModal.style.display = 'none';
             loadAndDisplayNotes();
         }, 1000);
-      
-    } catch (error) {
+
+    } catch (error)
+    {
         console.error('Edit note error:', error);
-        if (editNoteStatusSpan) {
+        if (editNoteStatusSpan)
+        {
             editNoteStatusSpan.textContent = `Error: ${error.message}`;
             editNoteStatusSpan.className = 'text-danger';
         }
-    } finally {
+    } finally
+    {
         if (saveEditedNoteButton) saveEditedNoteButton.disabled = false;
     }
 }
 
 // --- 14. Header Save Button ---
-function initializeHeaderSaveButton() {
+function initializeHeaderSaveButton()
+{
     const headerSaveBtn = document.getElementById('header-save-btn');
-    if (headerSaveBtn) {
+    if (headerSaveBtn)
+    {
         headerSaveBtn.addEventListener('click', handleFormSubmit);
     }
 }
 
 // --- 15. Initialization ---
-async function initializePage() {
-    try {
+async function initializePage()
+{
+    try
+    {
         // Load sidebar
         await loadSidebar();
-      
+
         // Check authentication
         const session = await checkAuthAndRedirect();
         if (!session) return;
-      
+
         // Get URL parameters
         if (!getUrlParams()) return;
-      
+
         // Initialize UI components
         initializeTabs();
         initializeClientSearch();
         initializeModals();
         initializeHeaderSaveButton();
         initializeTaskEventListeners();
-      
+
         // Setup form handling
-        if (clientForm) {
+        if (clientForm)
+        {
             clientForm.addEventListener('submit', handleFormSubmit);
         }
-      
+
         // Setup notes functionality
-        if (saveNoteButton) {
+        if (saveNoteButton)
+        {
             saveNoteButton.addEventListener('click', saveNewNote);
         }
-      
+
         // Load client data for edit mode
-        if (currentMode === 'edit' && currentClientId) {
+        if (currentMode === 'edit' && currentClientId)
+        {
             const clientData = await fetchClientData(currentClientId);
-            if (clientData) {
+            if (clientData)
+            {
                 populateForm(clientData);
                 initializeAutosave();
             }
-        } else {
+        } else
+        {
             updateClientHeader('Add New Client', 'Enter client information below');
         }
-      
+
         // Start inactivity detection
         setupInactivityDetection();
-      
-    } catch (error) {
+
+    } catch (error)
+    {
         console.error('Initialization error:', error);
         updateClientHeader('Error', 'Failed to initialize page');
     }
@@ -910,25 +1079,29 @@ async function initializePage() {
 
 // --- 16. Global Function Assignments (for onclick handlers) ---
 // Make functions global for onclick handlers
-window.openEditNoteModal = function(noteId) {
+window.openEditNoteModal = function (noteId)
+{
     const note = clientNotes.find(n => n.id === noteId);
     if (!note) return;
-  
+
     if (editNoteTextarea) editNoteTextarea.value = note.note_content || '';
     if (editingNoteIdInput) editingNoteIdInput.value = noteId;
     if (editNoteStatusSpan) editNoteStatusSpan.textContent = '';
     if (editNoteModal) editNoteModal.style.display = 'block';
 };
 
-window.deleteNote = async function(noteId, preview) {
+window.deleteNote = async function (noteId, preview)
+{
     if (!confirm(`Are you sure you want to delete this note?\n\n"${preview}..."`)) return;
-  
-    try {
+
+    try
+    {
         const { error } = await supabase.from('Notes').delete().eq('id', noteId);
         if (error) throw error;
-      
+
         await loadAndDisplayNotes();
-    } catch (error) {
+    } catch (error)
+    {
         console.error('Delete error:', error);
         alert(`Failed to delete note: ${error.message}`);
     }
@@ -948,11 +1121,14 @@ window.refreshTimeLedger = refreshTimeLedger;
 window.unlinkTime = unlinkTime;
 
 // --- 17. Cleanup ---
-window.addEventListener('beforeunload', () => {
-    if (autosaveInterval) {
+window.addEventListener('beforeunload', () =>
+{
+    if (autosaveInterval)
+    {
         clearInterval(autosaveInterval);
     }
-    if (searchTimeout) {
+    if (searchTimeout)
+    {
         clearTimeout(searchTimeout);
     }
 });
@@ -961,41 +1137,49 @@ window.addEventListener('beforeunload', () => {
 document.addEventListener('DOMContentLoaded', initializePage);
 
 // Add this function to handle task-related event listeners
-function initializeTaskEventListeners() {
+function initializeTaskEventListeners()
+{
     // Add New Task button
     const addTaskBtn = document.querySelector('button[onclick="addNewTask()"]');
-    if (addTaskBtn) {
+    if (addTaskBtn)
+    {
         addTaskBtn.removeAttribute('onclick');
         addTaskBtn.addEventListener('click', addNewTask);
     }
 
     // Refresh Tasks button  
     const refreshBtn = document.querySelector('button[onclick="refreshTasks()"]');
-    if (refreshBtn) {
+    if (refreshBtn)
+    {
         refreshBtn.removeAttribute('onclick');
         refreshBtn.addEventListener('click', refreshTasks);
     }
 
     // Toggle Inactive button
     const toggleBtn = document.getElementById('toggleInactiveBtn');
-    if (toggleBtn) {
+    if (toggleBtn)
+    {
         toggleBtn.removeAttribute('onclick');
         toggleBtn.addEventListener('click', toggleInactiveTasks);
     }
 
     // Task action buttons (bill, view, delete)
-    document.addEventListener('click', function(e) {
-        if (e.target.matches('.btn-bill')) {
+    document.addEventListener('click', function (e)
+    {
+        if (e.target.matches('.btn-bill'))
+        {
             const taskId = e.target.closest('tr').dataset.taskId || 'task1';
             billTask(taskId);
         }
-        
-        if (e.target.matches('.btn-view')) {
+
+        if (e.target.matches('.btn-view'))
+        {
             const taskId = e.target.closest('tr').dataset.taskId || 'task1';
             viewTask(taskId);
         }
-        
-        if (e.target.matches('.btn-delete')) {
+
+        if (e.target.matches('.btn-delete'))
+        {
             const taskId = e.target.closest('tr').dataset.taskId || 'task1';
             deleteTask(taskId);
         }
@@ -1003,35 +1187,41 @@ function initializeTaskEventListeners() {
 
     // Modal close button
     const modalCloseBtn = document.querySelector('#taskModal .modal-close-button');
-    if (modalCloseBtn) {
+    if (modalCloseBtn)
+    {
         modalCloseBtn.removeAttribute('onclick');
         modalCloseBtn.addEventListener('click', closeTaskModal);
     }
 
     // Bill current task button
     const billCurrentBtn = document.querySelector('button[onclick="billCurrentTask()"]');
-    if (billCurrentBtn) {
+    if (billCurrentBtn)
+    {
         billCurrentBtn.removeAttribute('onclick');
         billCurrentBtn.addEventListener('click', billCurrentTask);
     }
 
     // Link unassigned times button
     const linkTimesBtn = document.querySelector('button[onclick="linkUnassignedTimes()"]');
-    if (linkTimesBtn) {
+    if (linkTimesBtn)
+    {
         linkTimesBtn.removeAttribute('onclick');
         linkTimesBtn.addEventListener('click', linkUnassignedTimes);
     }
 
     // Refresh time ledger button
     const refreshLedgerBtn = document.querySelector('button[onclick="refreshTimeLedger()"]');
-    if (refreshLedgerBtn) {
+    if (refreshLedgerBtn)
+    {
         refreshLedgerBtn.removeAttribute('onclick');
         refreshLedgerBtn.addEventListener('click', refreshTimeLedger);
     }
 
     // Unlink time buttons
-    document.addEventListener('click', function(e) {
-        if (e.target.matches('.btn-action.btn-delete') && e.target.textContent.includes('Unlink')) {
+    document.addEventListener('click', function (e)
+    {
+        if (e.target.matches('.btn-action.btn-delete') && e.target.textContent.includes('Unlink'))
+        {
             const timeId = e.target.dataset.timeId || 'time1';
             unlinkTime(timeId);
         }

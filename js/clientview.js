@@ -254,13 +254,26 @@ function displaySearchResults(clients)
         {
             const item = document.createElement('div');
             item.className = 'search-result-item';
-            item.innerHTML = `
-                <div class="search-result-name">${client.client_name}</div>
-                <div class="search-result-details">
-                    ${client.ClientCode ? `Code: ${client.ClientCode}` : ''}
-                    ${client.EmailAddress ? ` • ${client.EmailAddress}` : ''}
-                </div>
-            `;
+
+            const nameDiv = document.createElement('div');
+            nameDiv.className = 'search-result-name';
+            nameDiv.textContent = client.client_name; // SAFE
+
+            const detailsDiv = document.createElement('div');
+            detailsDiv.className = 'search-result-details';
+            // Build text content safely
+            let detailsText = '';
+            if (client.ClientCode)
+            {
+                detailsText += `Code: ${client.ClientCode}`;
+            }
+            if (client.EmailAddress)
+            {
+                detailsText += (detailsText ? ' • ' : '') + client.EmailAddress;
+            }
+            detailsDiv.textContent = detailsText; // SAFE
+
+            item.append(nameDiv, detailsDiv);
 
             item.addEventListener('click', () =>
             {

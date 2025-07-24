@@ -2,13 +2,13 @@
 
 // --- 1. Import Shared Functionality ---
 import
-    {
-        supabase,
-        checkAuthAndRedirect,
-        setupInactivityDetection,
-        loadSidebar,
-        resetInactivityTimer
-    } from './shared.js';
+{
+    supabase,
+    checkAuthAndRedirect,
+    setupInactivityDetection,
+    loadSidebar,
+    resetInactivityTimer
+} from './shared.js';
 
 // --- 2. Global Variables ---
 let currentMode = 'edit';
@@ -640,56 +640,45 @@ function createNoteElement(note, userMap)
 
     const createdAt = note.created_at ? new Date(note.created_at) : null;
     const dateString = createdAt ? createdAt.toLocaleDateString('en-ZA', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
+        year: 'numeric', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit', hour12: false
     }) : 'N/A';
 
     const authorName = note.created_by ?
         (userMap.get(note.created_by) || `User (${note.created_by.substring(0, 6)}...)`) :
         'Unknown User';
 
-    // Set innerHTML WITHOUT inline onclick handlers
-    noteDiv.innerHTML = `
-        <div class="note-header">
-            <div class="note-meta">
-                <i class="fas fa-user"></i> ${authorName} • 
-                <i class="fas fa-calendar"></i> ${dateString}
-            </div>
-            <div class="note-actions-buttons">
-                <button class="btn btn-small btn-edit">
-                    <i class="fas fa-edit"></i> Edit
-                </button>
-                <button class="btn btn-small btn-delete">
-                    <i class="fas fa-trash"></i> Delete
-                </button>
-            </div>
-        </div>
-        <div class="note-content">${note.note_content || ''}</div>
-    `;
+    // --- Start of programmatic element creation ---
+    const noteHeader = document.createElement('div');
+    noteHeader.className = 'note-header';
 
-    // Find buttons and attach event listeners programmatically
-    const editButton = noteDiv.querySelector('.btn-edit');
-    if (editButton)
-    {
-        editButton.addEventListener('click', () =>
-        {
-            openEditNoteModal(note.id);
-        });
-    }
+    const noteMeta = document.createElement('div');
+    noteMeta.className = 'note-meta';
+    noteMeta.innerHTML = `<i class="fas fa-user"></i> ${authorName} • <i class="fas fa-calendar"></i> ${dateString}`; // Icons are safe static HTML
 
-    const deleteButton = noteDiv.querySelector('.btn-delete');
-    if (deleteButton)
-    {
-        const preview = (note.note_content || '').substring(0, 30).replace(/'/g, "\\'");
-        deleteButton.addEventListener('click', () =>
-        {
-            deleteNote(note.id, preview);
-        });
-    }
+    const noteActions = document.createElement('div');
+    noteActions.className = 'note-actions-buttons';
+
+    const editButton = document.createElement('button');
+    editButton.className = 'btn btn-small btn-edit';
+    editButton.innerHTML = `<i class="fas fa-edit"></i> Edit`;
+    editButton.addEventListener('click', () => openEditNoteModal(note.id));
+
+    const deleteButton = document.createElement('button');
+    deleteButton.className = 'btn btn-small btn-delete';
+    deleteButton.innerHTML = `<i class="fas fa-trash"></i> Delete`;
+    const preview = (note.note_content || '').substring(0, 30).replace(/'/g, "\\'");
+    deleteButton.addEventListener('click', () => deleteNote(note.id, preview));
+
+    noteActions.append(editButton, deleteButton);
+    noteHeader.append(noteMeta, noteActions);
+
+    const noteContent = document.createElement('div');
+    noteContent.className = 'note-content';
+    noteContent.textContent = note.note_content || ''; // <-- The critical fix: using .textContent
+
+    noteDiv.append(noteHeader, noteContent);
+    // --- End of programmatic element creation ---
 
     return noteDiv;
 }
